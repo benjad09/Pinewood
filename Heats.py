@@ -1,5 +1,5 @@
 import numpy as np
-
+import random
 
 MAXRACERS = 39
 NHEATS = 6
@@ -14,38 +14,94 @@ mrPetersonsMagicTable = [[0.857300337,0.308079215,0.728823235,0.352716281,0.3032
 
 
 
-class Weekend:
-    def __init__(self,racers:int):
+class Prix:
+    def __init__(self,):
+        
+        self.heats = []
+        self.results = []
+        self.Nracers = 0
+        self.extraRacers = 0
+        self.roundsPerHeat = 0
+
+    def _requireValidRace(func):
+        def wrapper(self,heat,round,*args,**kwargs):
+            if heat >=NHEATS:
+                raise Exception("Invalid Heat")
+            if round>=self.roundsPerHeat:
+                raise Exception("Invalid Round")
+            return func(self,heat,round,*args,**kwargs)
+        return wrapper
+        
+    def _requireHeat(func):
+        def wrapper(self,*args,**kwargs):
+            if(len(self.heats)==0):
+                raise Exception("Generate Heats Required")
+            else:
+                return func(self,*args,**kwargs)
+        return wrapper
+    
+    @_requireHeat
+    def getRoundsPerHeat(self):
+        return self.roundsPerHeat
+    
+    @_requireValidRace
+    def getRace(self,heat,round):
+        return self.heats[heat][round]["racers"]
+    
+    @_requireValidRace
+    def getResults(self,heat,round):
+        return self.heats[heat][round]["results"]
+    
+    @_requireValidRace
+    def pushResults(self,heat,round,lane1,lane2,lane3):
+        #require arguemnts to force correct format
+        results = [lane1,lane2,lane3]
+        if(1 not in results or 2 not in results or 3 not in results):
+            raise Exception("Bad Results")
+        self.heats[heat][round]["results"] = [lane1,lane2,lane3]
+        
+
+        
+    def generateHeats(self, racers:int):
         if racers>MAXRACERS:
             raise Exception("Too Many Racers")
-        self.racers = racers
-        self.extraRacers = self.racers%3
-        self.racesPerHeat = int(self.racers/3) + (1 if self.extraRacers != 0 else 0)
+
+        self.Nracers = racers
+        self.extraRacers = self.Nracers%3
+        self.roundsPerHeat = int(self.Nracers/3) + (1 if self.extraRacers != 0 else 0)
         
-        print(f"creating {NHEATS} heats with {self.racesPerHeat} races per heat")
-        self.heats = []
-        self.createHeats(racers)
-        print(self.heats[1])
-        
-        
-    def createHeats(self, racers:int):
+        print(f"creating {NHEATS} heats with {self.roundsPerHeat} races per heat")
         for heatn in range(0,NHEATS):
-            ranking = [rank + 1 for rank in np.argsort(np.argsort(mrPetersonsMagicTable[heatn][:racers]))]
+            ranking = [rank for rank in np.argsort(np.argsort(mrPetersonsMagicTable[heatn][:racers]))]
             races = []
-            for i in range(0,self.racesPerHeat-1):
-                races.append([ranking[i*3],ranking[i*3+1],ranking[i*3+2]])
+            extraHeat = []
+            for i in range(0,self.roundsPerHeat-1):
+                races.append({"racers":[ranking[i*3],ranking[i*3+1],ranking[i*3+2]],"results":[0,0,0]})
             if self.extraRacers == 0:
-                races.append([ranking[-3],ranking[-2],ranking[-1]])
+                extraHeat = [ranking[-3],ranking[-2],ranking[-1]]
             elif self.extraRacers == 2:
-                races.append([ranking[-2],ranking[-1],ranking[0]])
+                extraHeat [ranking[-2],ranking[-1],ranking[0]]
             elif self.extraRacers == 1:
-                races.append([ranking[-1],ranking[2],ranking[0]])
+                extraHeat = [ranking[-1],ranking[2],ranking[0]]
+            races.append({"racers":extraHeat,"results":[0,0,0]})
             self.heats.append(races)
         
-
+ 
 
 def main():
-    heat = Weekend(39)
+    prix = Prix()
+    finiteResults = [[1,2,3],[3,1,2],[2,1,3],[3,2,1],[1,3,2],[2,1,3]]
+    res = [1,2,3]
+    prix.generateHeats(15)
+    for i in range(0,6):
+        for ii in range(0,prix.getRoundsPerHeat()):
+            res = finiteResults[(int(random.random()*6))]
+            prix.pushResults(i,ii,res[0],res[1],res[2])
+
+    
+    print(prix.heats)
+    
+    
 
 if __name__ == '__main__':
     main()
