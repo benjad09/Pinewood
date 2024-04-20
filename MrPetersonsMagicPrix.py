@@ -1,6 +1,6 @@
 
 
-from Prix import Prix
+from Prix import Prix,Race
 
 import numpy as np
 
@@ -20,6 +20,13 @@ class ClintsPrix(Prix):
         super().__init__()
         self.rounds = 6
 
+    def calculateRacerScore(self,racer):
+        places = self.getRacerResults(racer)
+        if len(places) == 0:
+            return 0
+        else:
+            return float(sum(places))/float(len(places))
+
     def generatePrix(self, racers:int):
         if racers>MAXRACERS:
             raise Exception("Too Many Racers")
@@ -28,27 +35,32 @@ class ClintsPrix(Prix):
         self.extraRacers = self.Nracers%3
         self.heatsPerRound = int(self.Nracers/3) + (1 if self.extraRacers != 0 else 0)
         self.totalRaces = self.heatsPerRound*self.rounds
-        
+
+        self.racersbyindex = [i for i in range(0,racers)]
+        print(self.racersbyindex)
         print(f"creating {self.rounds} rounds with {self.heatsPerRound} heats per round, and {self.extraRacers} extra racers")
         for roundn in range(0,self.rounds):
             ranking = [rank for rank in np.argsort(np.argsort(mrPetersonsMagicTable[roundn][:racers]))]
-            heats = []
-            extraHeat = []
+            print(ranking)
+            heats: list[Race]= []
+            racersinround = []
             for i in range(0,self.heatsPerRound-1):
-                heats.append({"racers":[ranking[i*3],ranking[i*3+1],ranking[i*3+2]],"results":[None,None,None],"round":roundn,"heat":i,"racen":roundn*self.heatsPerRound+i})
+                racersinround.append([ranking[i*3],ranking[i*3+1],ranking[i*3+2]])
             if self.extraRacers == 0:
-                extraHeat = [ranking[-3],ranking[-2],ranking[-1]]
+                racersinround.append([ranking[-3],ranking[-2],ranking[-1]])
             elif self.extraRacers == 2:
-                extraHeat [ranking[-2],ranking[-1],ranking[0]]
+                racersinround.append([ranking[-2],ranking[-1],ranking[0]])
             elif self.extraRacers == 1:
-                extraHeat = [ranking[-1],ranking[2],ranking[0]]
-            heats.append({"racers":extraHeat,"results":[None,None,None],"round":roundn,"heat":i,"racen":roundn*self.heatsPerRound+i})
+                racersinround.append([ranking[-1],ranking[2],ranking[0]])
+            
+            for i in range(0,self.heatsPerRound):
+                heats.append(Race(racersinround[i],[None for _ in range(0,3)],roundn,i,roundn*self.heatsPerRound+i))
             self.races.append(heats)
 
 
 def main():
     prix = ClintsPrix()
-    prix.generatePrix(15)
+    prix.generatePrix(17)
     prix.savePrix("clintsPrix.csv")
 
     
