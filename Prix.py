@@ -93,6 +93,13 @@ class Prix:
                 results.append(self.getRacerResultRace(racer,race))
         return results
 
+    @_requireValidRace
+    def calculateRacerScore(self,racer):
+        places = self.getRacerResults(racer)
+        if len(places) == 0:
+            return 0
+        else:
+            return float(sum(places))/float(len(places))
 
     @_requireHeat
     def getLaneResults(self):

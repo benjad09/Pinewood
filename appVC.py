@@ -21,6 +21,7 @@ class appViewFunctions:
         self.updateRaceResultsFnc = updateRaceResults if updateRaceResults is not None else self.updateRaceResultsFnc
         self.updateRosterFnc = updateRoster if updateRoster is not None else self.updateRosterFnc
         self.updateFilePathFnc = updateFilePath if updateFilePath is not None else self.updateFilePathFnc
+        self.updateLeaderBoardFnc = updateLeaderBoard if updateLeaderBoard is None else self.updateLeaderBoardFnc
 
     def updateQue(self,raceList : "list[Race]",lenOfQue : int):
         if self.updateQueFnc != None:
@@ -71,10 +72,10 @@ class appControlFunctions:
         self.pushRaceNResultFnc = None
 
     def registerCB(self, upateMainFolder = None,
-                   updateRosterFile,saveRoster,loadRoster,addRacer,
-                   updatePrixFile,savePrix,loadPrix,
-                   generateMagicPrix,generateChampPrix,generateLeaderPrix,
-                   pushRaceResult,getRaceN,pushRaceNResult):
+                   updateRosterFile = None,saveRoster = None,loadRoster = None,addRacer = None,
+                   updatePrixFile = None,savePrix = None,loadPrix = None,
+                   generateMagicPrix = None,generateChampPrix = None,generateLeaderPrix = None,
+                   pushRaceResult = None,getRaceN = None,pushRaceNResult = None):
         
         self.updateMainFolderFnc = self.updateMainFolderFnc if upateMainFolder is None else upateMainFolder
         

@@ -2,11 +2,18 @@ from saveUtils import remove0index, add0index
 
 
 class Driver:
-    def __init__(self,driverNumber: int,driverName: str,carName: str = None):
+    def __init__(self,driverNumber: int,driverName: str,carName: str = None,score: int = 0):
         self.driverNumber = driverNumber
         self.driverName = driverName
         self.carName = carName
         self.carWeight = "~5oz"
+        self.score = score
+
+    def setDriverScore(self,score):
+        self.score = score
+
+    def getDriverScore(self):
+        return self.score
 
     def getDriverName(self) -> str:
         return self.driverName
@@ -30,6 +37,9 @@ class Roster:
 
         self.rosterLocked = False
         self.drivern = 0
+
+    def getRoster(self) -> "list[Driver]":
+        return self.drivers
 
 
     def _notLocked(func):

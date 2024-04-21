@@ -27,20 +27,20 @@ class ClintsPrix(Prix):
         else:
             return float(sum(places))/float(len(places))
 
-    def generatePrix(self, racers:int):
-        if racers>MAXRACERS:
+    def generatePrix(self, racers: "list[int]"):
+        if len(racers)>MAXRACERS:
             raise Exception("Too Many Racers")
 
-        self.Nracers = racers
+        self.Nracers = len(racers)
         self.extraRacers = self.Nracers%3
         self.heatsPerRound = int(self.Nracers/3) + (1 if self.extraRacers != 0 else 0)
         self.totalRaces = self.heatsPerRound*self.rounds
 
-        self.racersbyindex = [i for i in range(0,racers)]
+        self.racersbyindex = [i for i in range(0,self.Nracers)]
         print(self.racersbyindex)
         print(f"creating {self.rounds} rounds with {self.heatsPerRound} heats per round, and {self.extraRacers} extra racers")
         for roundn in range(0,self.rounds):
-            ranking = [rank for rank in np.argsort(np.argsort(mrPetersonsMagicTable[roundn][:racers]))]
+            ranking = [rank for rank in np.argsort(np.argsort(mrPetersonsMagicTable[roundn][:self.Nracers]))]
             print(ranking)
             heats: list[Race]= []
             racersinround = []
@@ -54,6 +54,8 @@ class ClintsPrix(Prix):
                 racersinround.append([ranking[-1],ranking[2],ranking[0]])
             
             for i in range(0,self.heatsPerRound):
+                for ii in range(0,3):
+                    racersinround[i][ii] = racers[racersinround[i][ii]]
                 heats.append(Race(racersinround[i],[None for _ in range(0,3)],roundn,i,roundn*self.heatsPerRound+i))
             self.races.append(heats)
 
