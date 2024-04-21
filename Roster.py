@@ -6,6 +6,7 @@ class Driver:
         self.driverNumber = driverNumber
         self.driverName = driverName
         self.carName = carName
+        self.carWeight = "~5oz"
 
     def getDriverName(self) -> str:
         return self.driverName
@@ -15,6 +16,9 @@ class Driver:
     
     def getDriverNumber(self) -> int:
         return self.driverNumber
+    
+    def getCarWeight(self) -> str:
+        return self.carWeight
 
 
 class Roster:
