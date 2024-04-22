@@ -34,22 +34,26 @@ class MainApp:
         self.controller.registerCB(self.upatedMainFolder,self.updateRosterFile,self.saveRoster,self.loadRoster,
                                    self.addRacer,self.updatePrixFile,self.savePrix,self.loadPrix,
                                    self.gengenerateMagicPrix,self.generateChampPrix,self.generateLeaderPrix,
-                                   self.pushRaceNResult,self.getRaceN,self.pushRaceNResult)
+                                   self.pushRaceResult,self.getRaceN,self.pushRaceNResult,self.getTotalRaces)
 
-    def updateQue(self):
-        RacesLeft = self.prix.totalRaces - self.raceN
+    def updateQue(self,offset=0):
+        N = self.raceN+offset
+        RacesLeft = self.prix.totalRaces - N
         if RacesLeft < self.QueN:
             self.QueN = RacesLeft
         self.raceList = []
         for i in range(0,self.QueN):
-            self.raceList.append(self.prix.getRaceByN(self.raceN+i))
+            self.raceList.append(self.prix.getRaceByN(N+i))
 
         for viewer in self.viewers:
             viewer.updateQue(self.raceList,self.QueN)
         
     def updateResults(self):
+        races = []
+        for i in range(0,self.raceN):
+            races.append(self.prix.getRaceByN(i))
         for viewer in self.viewers:
-            viewer.updateResults(self.prix,self.raceN)
+            viewer.updateResults(races,self.raceN)
 
     def updateRaceResults(self,posByLane : "list[int]"):
         for viewer in self.viewers:
@@ -67,13 +71,16 @@ class MainApp:
         racers = self.roseter.getIntDriverList()
         self.scores = []
         for racer in racers:
-            self.scores.append(self.prix.calculateRacerScore(racer))
+            score = self.prix.calculateRacerScore(racer)
+            self.roseter.getDriver(racer).setDriverScore(score)
+            self.scores.append(score)
         ranking = [int(rank) for rank in np.argsort(self.scores)]
-        ranking.reverse()
-        self.leaderBoard = racers[ranking]
+        # ranking.reverse()
+        self.leaderBoard = [racers[rank] for rank in ranking]
         
         
     def updateLeaderBoard(self):
+        self.generateLeaderBoard()
         for viewer in self.viewers:
             viewer.updateLeaderBoard(self.leaderBoard,4)
 
@@ -112,6 +119,8 @@ class MainApp:
     def gengenerateMagicPrix(self):
         self.prix = ClintsPrix()
         self.prix.generatePrix(self.roseter.getIntDriverList())
+        self.updateQue()
+        self.savePrix()
         self.QueN = 3
 
                    
@@ -124,7 +133,7 @@ class MainApp:
         print("Todo")
                    
     def pushRaceResult(self,Results):
-        self.pushRaceNResult(self,self.raceN,Results)
+        self.pushRaceNResult(self.raceN,Results)
         self.raceN = self.raceN + 1
         
                    
@@ -134,10 +143,13 @@ class MainApp:
     def pushRaceNResult(self,N,Results):
         self.prix.pushResultsbyN(N,Results)
         self.savePrix()
-        self.updateQue()
-        self.updateLeaderBoard()
+        self.updateQue(1)
         self.updateRaceResults(Results)
         self.updateResults()
+        self.updateLeaderBoard()
+
+    def getTotalRaces(self):
+        return self.prix.getNRounds() * self.prix.getHeatsPerRound()
 
 
 def main():

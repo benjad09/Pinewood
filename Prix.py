@@ -80,9 +80,9 @@ class Prix:
     
     @_requireValidRacer
     def getRacerResultRace(self,racer, race: Race):
-        if racer not in race:
+        if racer not in race.getRacers():
             return None
-        return race.getResults(race.getRacers().index(racer))
+        return race.getResults()[race.getRacers().index(racer)]
         
 
     @_requireValidRacer      
@@ -138,8 +138,8 @@ class Prix:
     @_requireHeat
     def getRaces(self) -> "list[Race]":
         races = []
-        for round in self.rounds:
-            for heat in self.heatsPerRound:
+        for round in range(self.rounds):
+            for heat in range(self.heatsPerRound):
                 races.append(self.races[round][heat])
         return races
     
@@ -153,7 +153,7 @@ class Prix:
 
     @_requireValidRace
     def getResults(self,round,heat):
-        return self.races[round][heat]
+        return self.races[round][heat].getResults()
     
     @_requireValidN
     def getResultsByN(self,N):
@@ -170,7 +170,7 @@ class Prix:
 
     @_requireValidN
     def pushResultsbyN(self,N,results):
-        return self.pushResults(self,*self.getRHfromN(N),results)
+        return self.pushResults(*self.getRHfromN(N),results)
         
     def appendCommas(self,commas):
         text = ","
@@ -194,7 +194,7 @@ class Prix:
         text +=',lanes,'
         for _ in range(0,self.rounds):
             for lane in range(0,3):
-                text+=f"{lane},"
+                text+=f"{lane+1},"
             text+=','
         text += '\n'
         for heat in range(0,self.heatsPerRound):
