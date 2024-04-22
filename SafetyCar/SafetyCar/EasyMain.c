@@ -33,6 +33,9 @@
 #include "debug.h"
 #include "gpio_helper.h"
 #include "CCU4_Handler.h"
+
+#include "ledSeq.h"
+
 #include <stdbool.h>
 
 #define DEBUG_UART_XMC 					XMC_UART0_CH0
@@ -140,9 +143,80 @@ void set_bar(uint8_t mask)
 
 }
 
+const LedCommand_t leftright[] = {COMMAND_DEF(0b1100,500),COMMAND_DEF(0b0011,500)};
+SEQUENCE_DEF(lrseq,leftright,10);
+
+const LedCommand_t outin[] = {COMMAND_DEF(0b0110,500),COMMAND_DEF(0b1001,500)};
+SEQUENCE_DEF(outinseq,outin,10);
+
+const LedCommand_t squig[] = {COMMAND_DEF(0b0101,200),COMMAND_DEF(0b1010,200)};
+SEQUENCE_DEF(squiginseq,squig,10);
+
+const LedCommand_t flasyLR[] = {COMMAND_DEF(0b1000,100),COMMAND_DEF(0b0100,50),COMMAND_DEF(0b1000,100),COMMAND_DEF(0b0100,50),COMMAND_DEF(0b1000,100),COMMAND_DEF(0b0100,50),COMMAND_DEF(0b1000,100),COMMAND_DEF(0b0100,50),
+								COMMAND_DEF(0b0001,100),COMMAND_DEF(0b0010,50),COMMAND_DEF(0b0001,100),COMMAND_DEF(0b0010,50),COMMAND_DEF(0b0001,100),COMMAND_DEF(0b0010,50),COMMAND_DEF(0b0001,100),COMMAND_DEF(0b0010,50)};
+SEQUENCE_DEF(flashLRseq,flasyLR,3);
+
+
+const LedCommand_t indecateRight[] = {COMMAND_DEF(0b1000,100),COMMAND_DEF(0b1100,100),COMMAND_DEF(0b1110,100),COMMAND_DEF(0b1111,100),COMMAND_DEF(0b0111,100),COMMAND_DEF(0b0011,100),COMMAND_DEF(0b0001,100),COMMAND_DEF(0b0000,100)};
+SEQUENCE_DEF(goRight,indecateRight,10);
+
+const LedCommand_t indecateLeft[] = {COMMAND_DEF(0b0001,100),COMMAND_DEF(0b0011,100),COMMAND_DEF(0b0111,100),COMMAND_DEF(0b1111,100),COMMAND_DEF(0b1110,100),COMMAND_DEF(0b1100,100),COMMAND_DEF(0b1000,100),COMMAND_DEF(0b0000,100)};
+SEQUENCE_DEF(goLeft,indecateLeft,10);
+
+const LedCommand_t indecateCenter[] = {COMMAND_DEF(0b1001,200),COMMAND_DEF(0b1111,200),COMMAND_DEF(0b0110,200),COMMAND_DEF(0b0000,200)};
+SEQUENCE_DEF(goCenter,indecateCenter,10);
+
+LedRunner_t barRunner = {0};
+
+
+void goDir(int argc,char **argv)
+{
+	if (argc>= 1)
+	{
+		switch(argv[0][0])
+		{
+		case '0':
+		case 'L':
+		case 'l':
+			start_Lrunner(&barRunner,&goLeft);
+
+			break;
+		case '1':
+		case 'C':
+		case 'c':
+			start_Lrunner(&barRunner,&goCenter);
+
+			break;
+		case '2':
+		case 'R':
+		case 'r':
+			start_Lrunner(&barRunner,&goRight);
+
+			break;
+		default:
+			debug_print("bad arg");
+		}
+	}
+}
+
+DEFINE_DEBUG_SUB(goDirsub,goDir,"pick a direction",false,1,1);
+
+volatile bool byteIn = false;
+
+void db_in(uint32_t bytes_avalible)
+{
+	byteIn=true;
+}
+
+uart_isr_t debugISR =
+{
+		.byte_available = db_in,
+};
 
 int main(void)
 {
+
+	uint8_t charIn;
 	// Clock configuration
 	init_gpio(&led0,XMC_GPIO_MODE_OUTPUT_PUSH_PULL);
 	init_gpio(&led1,XMC_GPIO_MODE_OUTPUT_PUSH_PULL);
@@ -164,26 +238,42 @@ int main(void)
 	set_bar(0x0);
 	SysTick_Config(SystemCoreClock / 1000);
 	xmc_uart_init(&debug_uart);
+	xmc_uart_reg_isr(&debug_uart,&debugISR);
+
+
+
 	startdebug(sendDebugString);
+	subFnc(&goDirsub);
 	debug_print("Hello Racers!\r\n");
 	set_bar(0xf);
+
+	link_seq(&goRight,&flashLRseq);
+	link_seq(&goLeft,&flashLRseq);
+	link_seq(&goCenter,&flashLRseq);
+
+
+	link_seq(&flashLRseq,&lrseq);
+
+	link_seq(&lrseq,&outinseq);
+
+	link_seq(&outinseq,&squiginseq);
+	link_seq(&squiginseq,&lrseq);
+	start_Lrunner(&barRunner,&goRight);
+
 	while(1)
 	{
-		for(size_t i = 0;i<10;i++)
+		if(update_Lrunner(&barRunner,uptime_get()))
 		{
-			set_bar(0b1100);
-			busy_wait_ms(500);
-			set_bar(0b0011);
-			busy_wait_ms(500);
+			set_bar(get_LrunnerVal(&barRunner));
 		}
-		for(size_t i = 0;i<10;i++)
+		if(byteIn)
 		{
-			set_bar(0b1001);
-			busy_wait_ms(500);
-			set_bar(0b0110);
-			busy_wait_ms(500);
+			byteIn = false;
+			while(xmc_uart_get_byte(&debug_uart,&charIn) == uart_ok)
+			{
+				debugIn((charIn));
+			}
 		}
-
 	}
 }
 

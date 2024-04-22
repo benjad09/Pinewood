@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #define MAX_DEPTH 16
 
@@ -19,33 +20,39 @@ typedef struct LedCommand {
 }LedCommand_t;
 
 typedef struct LedSequence {
-	LedCommand_t *const commands;
+	const LedCommand_t *commands;
 	const size_t len;
 	const size_t repeats;
+	struct LedSequence *next;
+}LedSequence_t;
+
+typedef struct LedRunner
+{
+	LedSequence_t *seq;
 	size_t index;
 	size_t loop;
 	uint32_t timeout;
 	uint16_t valueout;
-	struct LedSequence *next;
-}LedSequence_t;
+	bool is_running;
+}LedRunner_t;
 
-void start_Lsequence_OneShot(LedSequence_t *seq);
+void start_Lrunner_OneShot(LedRunner_t *run,LedSequence_t *head);
 
-void start_Lsequence(LedSequence_t *seq);
+void start_Lrunner(LedRunner_t *run,LedSequence_t *head);
 
-void start_Lsequence_forever(LedSequence_t *seq);
+void start_Lrunner_forever(LedRunner_t *run,LedSequence_t *head);
 
-bool update_Lsequence(LedSequence_t *seq);
+bool update_Lrunner(LedRunner_t *run,uint32_t uptime);
 
-uint16_t get_Lsequence(LedSequence_t *seq);
+uint16_t get_LrunnerVal(LedRunner_t *run);
 
-void link_Lsequence(LedSequence_t *seq,LedSequence_t *seq2);
+void link_seq(LedSequence_t *head,LedSequence_t *next);
 
 #define COMMAND_DEF(setVal,holdMs)	{.value = setVal,.holdtime = holdMs}
 
 #define SEQUENCE_DEF(name,commandArray,seqrepeats)						\
 		LedSequence_t name = {											\
-				.commands = &commandArray,								\
+				.commands = commandArray,								\
 				.len = sizeof(commandArray)/sizeof(LedCommand_t),		\
 				.repeats = seqrepeats,									\
 				}
