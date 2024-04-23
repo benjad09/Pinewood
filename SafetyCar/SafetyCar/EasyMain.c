@@ -119,10 +119,10 @@ DEF_GPIO(led0,XMC_GPIO_PORT0,6);
 DEF_GPIO(led1,XMC_GPIO_PORT0,7);
 DEF_GPIO(led2,XMC_GPIO_PORT0,8);
 DEF_GPIO(led3,XMC_GPIO_PORT0,9);
-DEF_GPIO(greenLight,XMC_GPIO_PORT0,14)
+DEF_GPIO(greenLight,XMC_GPIO_PORT0,5)
 CCU4_MODULE_DEV_DEF(Mot_CCU, MOTOR_CC4_MODULE);
-CCU4_PWM_DEF(HeadLights,ENA_CC4_SLICE,&Mot_CCU,ENA_CC4_PRESCALLER,ENA_CC4_SLICE_N,ENA_CC4_SHADOW,ENA_PORT,ENA_PIN,ENA_AF);
-CCU4_PWM_DEF(TailLights,ENB_CC4_SLICE,&Mot_CCU,ENB_CC4_PRESCALLER,ENB_CC4_SLICE_N,ENB_CC4_SHADOW,ENB_PORT,ENB_PIN,ENB_AF);
+CCU4_PWM_DEF(TailLights,ENA_CC4_SLICE,&Mot_CCU,ENA_CC4_PRESCALLER,ENA_CC4_SLICE_N,ENA_CC4_SHADOW,ENA_PORT,ENA_PIN,ENA_AF);
+CCU4_PWM_DEF(HeadLights,ENB_CC4_SLICE,&Mot_CCU,ENB_CC4_PRESCALLER,ENB_CC4_SLICE_N,ENB_CC4_SHADOW,ENB_PORT,ENB_PIN,ENB_AF);
 
 
 
@@ -136,9 +136,9 @@ void sendDebugString(const char*const str)
 
 void set_bar(uint8_t mask)
 {
-	set_gpio(&led0,(mask>>3)&0x1);
-	set_gpio(&led1,(mask>>2)&0x1);
-	set_gpio(&led2,(mask>>1)&0x1);
+	set_gpio(&led2,(mask>>3)&0x1);
+	set_gpio(&led0,(mask>>2)&0x1);
+	set_gpio(&led1,(mask>>1)&0x1);
 	set_gpio(&led3,(mask>>0)&0x1);
 
 }
@@ -167,7 +167,61 @@ const LedCommand_t indecateCenter[] = {COMMAND_DEF(0b1001,200),COMMAND_DEF(0b111
 SEQUENCE_DEF(goCenter,indecateCenter,10);
 
 LedRunner_t barRunner = {0};
+LedRunner_t greenRunner = {0};
+LedRunner_t headlightrunner = {0};
+LedRunner_t taillightrunner = {0};
 
+const LedCommand_t flashBrights[] = {COMMAND_DEF(1000,250),COMMAND_DEF(100,250)};
+SEQUENCE_DEF(flashB,flashBrights,2);
+
+const LedCommand_t GO_GREENSTART[] = {COMMAND_DEF(1,250),COMMAND_DEF(0,250)};
+SEQUENCE_DEF(startGreen,GO_GREENSTART,3);
+
+const LedCommand_t HOLDGREEN[] = {COMMAND_DEF(1,5000),COMMAND_DEF(0,100)};
+SEQUENCE_DEF(HoldGreen,HOLDGREEN,1);
+
+const LedCommand_t B_ON[] = {COMMAND_DEF(1000,100)};
+SEQUENCE_DEF(brake_on,B_ON,1);
+
+const LedCommand_t B_OFF[] = {COMMAND_DEF(125,100)};
+SEQUENCE_DEF(brake_off,B_OFF,1);
+
+void brake(int argc,char **argv)
+{
+	if(argc == 1)
+	{
+		switch(argv[0][0])
+		{
+		case '1':
+		case 'I':
+		case 'i':
+		case 's':
+		case 'S':
+			start_Lrunner(&taillightrunner,&brake_on);
+			return;
+			break;
+		default:
+			break;
+		}
+	}
+	start_Lrunner(&taillightrunner,&brake_off);
+}
+
+void flash(int argc,char **argv)
+{
+	(void) argc;
+	(void) argv;
+	start_Lrunner(&headlightrunner,&flashB);
+	//start_Lrunner(&taillightrunner,&flashB);
+}
+
+void green(int argc,char **argv)
+{
+	//ITSNOT EASY BEING GREEN
+	(void) argc;
+	(void) argv;
+	start_Lrunner(&greenRunner,&startGreen);
+}
 
 void goDir(int argc,char **argv)
 {
@@ -200,6 +254,12 @@ void goDir(int argc,char **argv)
 }
 
 DEFINE_DEBUG_SUB(goDirsub,goDir,"pick a direction",false,1,1);
+
+DEFINE_DEBUG_SUB(flashSub,flash,"thank You",false,0,0);
+
+DEFINE_DEBUG_SUB(greenSub,green,"for you youngsters",false,0,0);
+
+DEFINE_DEBUG_SUB(brakeSub,brake,"Hold UP",false,0,1);
 
 volatile bool byteIn = false;
 
@@ -244,19 +304,24 @@ int main(void)
 
 	startdebug(sendDebugString);
 	subFnc(&goDirsub);
-	debug_print("Hello Racers!\r\n");
+	subFnc(&greenSub);
+	subFnc(&flashSub);
+	subFnc(&brakeSub);
+	debug_print("\r\n\n\n\nHello Racers!\r\n");
 	set_bar(0xf);
 
-	link_seq(&goRight,&flashLRseq);
-	link_seq(&goLeft,&flashLRseq);
-	link_seq(&goCenter,&flashLRseq);
+	link_seq(&startGreen,&HoldGreen);
+
+	link_seq(&goRight,&lrseq);
+	link_seq(&goLeft,&lrseq);
+	link_seq(&goCenter,&lrseq);
 
 
-	link_seq(&flashLRseq,&lrseq);
+
 
 	link_seq(&lrseq,&outinseq);
-
-	link_seq(&outinseq,&squiginseq);
+	link_seq(&outinseq,&flashLRseq);
+	link_seq(&flashLRseq,&squiginseq);
 	link_seq(&squiginseq,&lrseq);
 	start_Lrunner(&barRunner,&goRight);
 
@@ -265,6 +330,18 @@ int main(void)
 		if(update_Lrunner(&barRunner,uptime_get()))
 		{
 			set_bar(get_LrunnerVal(&barRunner));
+		}
+		if(update_Lrunner(&greenRunner,uptime_get()))
+		{
+			set_gpio(&greenLight,get_LrunnerVal(&greenRunner));
+		}
+		if(update_Lrunner(&headlightrunner,uptime_get()))
+		{
+			start_pwm(&HeadLights,get_LrunnerVal(&headlightrunner),1000);
+		}
+		if(update_Lrunner(&taillightrunner,uptime_get()))
+		{
+			start_pwm(&TailLights,get_LrunnerVal(&taillightrunner),1000);
 		}
 		if(byteIn)
 		{
