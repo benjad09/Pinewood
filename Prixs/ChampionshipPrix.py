@@ -10,7 +10,7 @@ class ChampPrix(Prix):
             return 4.0
         places = self.getRacerResults(racer)
         if len(places) == 0:
-            return 0
+            return 4.0
         else:
             return float(sum(places))/float(len(places))
 

@@ -51,10 +51,10 @@ class MainApp:
         
     def updateResults(self):
         races = []
-        for i in range(0,self.raceN):
+        for i in range(0,self.raceN+1):
             races.append(self.prix.getRaceByN(i))
         for viewer in self.viewers:
-            viewer.updateResults(races,self.raceN)
+            viewer.updateResults(races,self.raceN+1)
 
     def updateRaceResults(self,posByLane : "list[int]"):
         for viewer in self.viewers:
@@ -104,7 +104,11 @@ class MainApp:
         self.updateRoster()
     
     def addRacer(self,name,carName = None):
+        if self.roseter is None:
+            self.roseter = Roster()
+            self.roseterFile = str(self.rosterPath)
         self.roseter.addRacer(name,carName)
+        self.updateRoster()
                    
     def updatePrixFile(self,path):
         self.prixPath = Path(path)

@@ -7,8 +7,7 @@ from Prix import Race
 import time
 
 class CommandLineViewer:
-    def __init__(self,control :appControlFunctions,view :appViewFunctions):
-        self.control = control
+    def __init__(self,view :appViewFunctions):
         self.view = view
 
         view.registerCb(self.updateQue,self.updateResults,self.updateRaceResults,
@@ -75,10 +74,17 @@ def main():
     view = appViewFunctions()
     controller = appControlFunctions()
     MainApp(controller,[view])
-    cmveiwer = CommandLineViewer(controller,view)
-    controller.updateRosterFile("newRos.csv")
-    controller.upatedMainFolder("./JoyClub2024")
-    controller.loadRoster()
+    cmveiwer = CommandLineViewer(view)
+    controller.upatedMainFolder("./TestClub2024")
+
+    controller.addRacer("Bob","Bobs car")
+    controller.addRacer("Dave")
+    controller.addRacer("Warren")
+    controller.saveRoster()
+
+    #controller.updateRosterFile("newRos.csv")
+    
+    #controller.loadRoster()
     controller.generateMagicPrix()
     races = controller.getTotalRacesFnc()
     
