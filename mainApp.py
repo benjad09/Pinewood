@@ -2,7 +2,8 @@
 
 from Prix import Prix,Race
 from Roster import Driver,Roster
-from MrPetersonsMagicPrix import ClintsPrix
+from Prixs.MrPetersonsMagicPrix import ClintsPrix
+from Prixs.ChampionshipPrix import ChampPrix
 
 from pathlib import Path
 
@@ -117,15 +118,24 @@ class MainApp:
         self.prix.loadPrix(str(self.prixPath))
                    
     def gengenerateMagicPrix(self):
+        self.raceN = 0
         self.prix = ClintsPrix()
         self.prix.generatePrix(self.roseter.getIntDriverList())
+        self.updatePrixFile(str(self.mainFolder)+"\\"+"magicPrix.csv")
         self.updateQue()
         self.savePrix()
         self.QueN = 3
 
                    
-    def generateChampPrix(self):
+    def generateChampPrix(self,champions):
+        self.raceN = 0
         self.QueN = 1
+        self.updatePrixFile(str(self.mainFolder)+"\\"+"championship.csv")
+        self.prix = ChampPrix()
+        self.prix.generatePrix(champions)
+        self.updateQue()
+        self.savePrix()
+
         print("Todo when rankings")
         
                    

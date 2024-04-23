@@ -129,8 +129,8 @@ class appControlFunctions:
     def generateMagicPrix(self):
         return None if self.generateMagicPrixFnc is None else self.generateMagicPrixFnc()
                    
-    def generateChampPrix(self):
-        return None if self.generateChampPrixFnc is None else self.generateChampPrixFnc()
+    def generateChampPrix(self,champs):
+        return None if self.generateChampPrixFnc is None else self.generateChampPrixFnc(champs)
                    
     def generateLeaderPrix(self):
         return None if self.generateLeaderPrixFnc is None else self.generateLeaderPrixFnc()
