@@ -186,6 +186,9 @@ SEQUENCE_DEF(brake_on,B_ON,1);
 const LedCommand_t B_OFF[] = {COMMAND_DEF(125,100)};
 SEQUENCE_DEF(brake_off,B_OFF,1);
 
+const LedCommand_t BAR_OFF[] = {COMMAND_DEF(0b0000,100)};
+SEQUENCE_DEF(barof,BAR_OFF,1);
+
 void brake(int argc,char **argv)
 {
 	if(argc == 1)
@@ -222,6 +225,68 @@ void green(int argc,char **argv)
 	(void) argv;
 	start_Lrunner(&greenRunner,&startGreen);
 }
+
+void barOff(int argc,char **argv)
+{
+	(void) argc;
+
+
+	(void) argv;
+
+
+	link_seq(&goRight,NULL);
+	link_seq(&goLeft,NULL);
+	link_seq(&goCenter,NULL);
+	start_Lrunner(&barRunner,&barof);
+
+}
+
+void barOn(int argc,char **argv)
+{
+	(void) argc;
+	(void) argv;
+
+	link_seq(&goRight,&lrseq);
+	link_seq(&goLeft,&lrseq);
+	link_seq(&goCenter,&lrseq);
+	start_Lrunner(&barRunner,&flashLRseq);
+}
+
+void simpleSeq(int argc,char **argv)
+{
+	(void) argc;
+	(void) argv;
+	link_seq(&outinseq,&outinseq);
+	start_Lrunner(&barRunner,&outinseq);
+}
+
+void funSeq(int argc,char **argv)
+{
+	link_seq(&outinseq,&flashLRseq);
+	start_Lrunner(&barRunner,&flashLRseq);
+}
+
+void goL(int argc,char **argv)
+{
+	(void) argc;
+	(void) argv;
+	start_Lrunner(&barRunner,&goLeft);
+}
+
+void goC(int argc,char **argv)
+{
+	(void) argc;
+	(void) argv;
+	start_Lrunner(&barRunner,&goCenter);
+}
+
+void goR(int argc,char **argv)
+{
+	(void) argc;
+	(void) argv;
+	start_Lrunner(&barRunner,&goRight);
+}
+
 
 void goDir(int argc,char **argv)
 {
@@ -260,6 +325,16 @@ DEFINE_DEBUG_SUB(flashSub,flash,"thank You",false,0,0);
 DEFINE_DEBUG_SUB(greenSub,green,"for you youngsters",false,0,0);
 
 DEFINE_DEBUG_SUB(brakeSub,brake,"Hold UP",false,0,1);
+
+
+DEFINE_DEBUG_SUB(barOffSub,barOff,"off",false,0,0);
+DEFINE_DEBUG_SUB(barOnSub,barOn,"on",false,0,0);
+DEFINE_DEBUG_SUB(simpleSeqSub,simpleSeq,"less distracting",false,0,0);
+DEFINE_DEBUG_SUB(funSeqSub,funSeq,"FUNER",false,0,0);
+DEFINE_DEBUG_SUB(goLSub,goL,"L",false,0,0);
+DEFINE_DEBUG_SUB(goCSub,goC,"Center",false,0,0);
+DEFINE_DEBUG_SUB(goRSub,goR,"R",false,0,0);
+
 
 volatile bool byteIn = false;
 
@@ -307,6 +382,31 @@ int main(void)
 	subFnc(&greenSub);
 	subFnc(&flashSub);
 	subFnc(&brakeSub);
+
+	subFnc(&barOffSub);
+	subFnc(&barOnSub);
+	subFnc(&simpleSeqSub);
+	subFnc(&funSeqSub);
+	subFnc(&goLSub);
+	subFnc(&goCSub);
+	subFnc(&goRSub);
+
+
+	subFncKey(&flashSub,VT_F1);
+	subFncKey(&greenSub,VT_F4);
+
+	subFncKey(&goLSub,VT_F5);
+	subFncKey(&goCSub,VT_F6);
+	subFncKey(&goRSub,VT_F7);
+
+
+	subFncKey(&simpleSeqSub,VT_F9);
+	subFncKey(&funSeqSub,VT_F10);
+	subFncKey(&barOffSub,VT_F11);
+	subFncKey(&barOnSub,VT_F12);
+
+
+
 	debug_print("\r\n\n\n\nHello Racers!\r\n");
 	set_bar(0xf);
 
@@ -323,7 +423,7 @@ int main(void)
 	link_seq(&outinseq,&flashLRseq);
 	link_seq(&flashLRseq,&squiginseq);
 	link_seq(&squiginseq,&lrseq);
-	start_Lrunner(&barRunner,&goRight);
+	start_Lrunner(&barRunner,&flashLRseq);
 
 	while(1)
 	{
