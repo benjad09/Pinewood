@@ -5,7 +5,6 @@ import os
 
 
 
-
 class Prix:
     def __init__(self,lanes: int):
         self.lanes = lanes
@@ -20,7 +19,7 @@ class Prix:
 
         with open(path,"w+") as file:
             file.write(f"Version,1,")
-            file.write(","*(columns-1) + "\n")
+            file.write(","*(columns-2) + "\n")
 
 
             file.write(",,")
@@ -28,6 +27,8 @@ class Prix:
                 file.write(f"Round {roundN+1}")
                 file.write(","*self.lanes)
 
+            file.seek(file.tell()-1,0) 
+            file.truncate()
             file.write("\n")
 
             file.write(",lane,")
@@ -35,6 +36,8 @@ class Prix:
                 for lane in range(self.lanes):
                  file.write(f"{lane+1},")
 
+            file.seek(file.tell()-1,0) 
+            file.truncate()
             file.write("\n")
 
             maxRoundLen = max(roundLen)
@@ -46,6 +49,8 @@ class Prix:
                             file.write(f"{racer+1},")
                     else:
                         file.write("N/A,"*self.lanes)
+                file.seek(file.tell()-1,0) 
+                file.truncate()
                 file.write(f"\n")
                 file.write(f",,")
                 for roundN in range(len(self.rounds)):
@@ -57,6 +62,8 @@ class Prix:
                             file.write("*,"*self.lanes)
                     else:
                         file.write("N/A,"*self.lanes)
+                file.seek(file.tell()-1,0) 
+                file.truncate()
                 file.write("\n")
 
     def load(self,path: str):
@@ -66,10 +73,73 @@ class Prix:
             if("Version,1," not in line0):
                 raise Exception("Not a valid prix file")
             line1=file.readline()[:-1].split(',')
-            print(line1)
-            roundsN=(len(line1)-3)//self.lanes
-            print(f"loading {roundsN} rounds")
-            
+            roundsN=(len(line1)-2)//self.lanes #-2 for first 2 lines
+            file.readline()#clear Lane Markers
+
+            self.rounds :list[list[Race]]= [[] for _ in range(roundsN)]
+            while 1:
+                driverRead=file.readline()[:-1]
+                if(',' in driverRead):
+                    resultRead=file.readline()[:-1].split(",")
+                    driverRead=driverRead.split(",")
+                    for round in range(roundsN):
+                        roundDrivers = driverRead[(2+round*self.lanes):(2+(round+1)*self.lanes)]
+                        roundResults = resultRead[(2+round*self.lanes):(2+(round+1)*self.lanes)]
+                        if(roundDrivers[0].isnumeric()):
+                            self.rounds[round].append(Race([int(driver)-1 for driver in roundDrivers]))
+                            if(roundResults[0].isnumeric()):
+                                self.rounds[round][-1].updateResults([int(result) for result in roundResults])
+
+                else:
+                    break
+
+    def validRound(self,roundN: int) -> bool:
+        return(roundN < self.getRoundN())
+
+    def getRoundN(self) -> int:
+        return len(self.rounds)
+    
+    def __requireValidRound(func):
+        def wrapper(self,roundN: int,*args,**kwargs):
+            if self.validRound(roundN):
+                return func(self,roundN,*args,**kwargs)
+            raise Exception("invalidRound")
+        return wrapper
+
+    @__requireValidRound
+    def getHeatsInRound(self,roundN: int) -> int:
+        return len(self.rounds[roundN])
+    
+    @__requireValidRound
+    def validHeat(self,roundN: int, heatN: int) -> bool:
+        return (heatN < self.getHeatsInRound(roundN))
+    
+    def __requireValidRace(func):
+        def wrapper(self,roundN:int,heatN:int,*args,**kwargs):
+            if self.validRound(roundN) and self.validHeat(roundN,heatN):
+                return func(self,roundN,heatN,*args,**kwargs)
+            raise Exception("invalidRace")
+        return wrapper
+    
+    @__requireValidRace
+    def getRace(self,roundN: int, heatN: int) -> Race:
+        return self.rounds[roundN][heatN]
+    
+    def getRaceByN(self,raceN: int) -> Race:
+        roundN = 0
+        while(roundN < self.getRoundN()):
+            if raceN >= self.getHeatsInRound(roundN):
+                raceN = raceN - self.getHeatsInRound(roundN)
+                roundN = roundN + 1
+            else:
+                return self.getRace(roundN,raceN)
+        raise Exception("invalid race")
+
+    
+
+
+    
+
 
             
 
@@ -90,8 +160,11 @@ def main():
         testPrixRaces.append(heats)
 
     testPrix.rounds = testPrixRaces
-    testPrix.save(f"{pathname}/testPrix.csv")
-    testPrix.load(f"{pathname}/testPrix.csv")
+    #testPrix.save(f"{pathname}/testPrix.csv")
+    testPrix.load(f"{pathname}/club2024.csv")
+    print(f"loaded prix with {testPrix.getRoundN()} rounds")
+
+    testPrix.save(f"{pathname}/testSave.csv")
 
 
 

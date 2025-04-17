@@ -55,10 +55,10 @@ class Roster:
         
 
     def newdriver(self,driverName: str,carName : typing.Optional[str]=None):
-        self.drivers.append(driver(self.driverN,driverName,carName))
+        self.drivers.append(Driver(self.driverN,driverName,carName))
         self.driverN = self.driverN + 1
 
-    def getdriverByNum(self,N: int) -> driver:
+    def getdriverByNum(self,N: int) -> Driver:
         for driver in self.drivers:
             if driver.getdriverNum() == N:
                 return driver
