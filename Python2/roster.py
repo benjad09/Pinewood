@@ -7,6 +7,12 @@ class Driver:
         self.driverName = driverName
         self.carName = carName
     
+    def setDriverName(self, name :str):
+        self.driverName = name
+
+    def setCarName(self, name :str):
+        self.carName = name
+
     def getdriverNum(self) -> int:
         return self.driverNum
 
