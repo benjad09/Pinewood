@@ -3,6 +3,10 @@ from race import Race
 import os
 
 class ChampPrix(Prix):
+    def __init__(self,lanes: int):
+        super().__init__(lanes)
+        self.type = "championchip"
+
     def newPrix(self,driverList: list[int]):
         driverN = len(driverList)
         driverList.reverse()

@@ -9,7 +9,7 @@ class Prix:
     def __init__(self,lanes: int):
         self.lanes = lanes
         self.rounds :list[list[Race]]= [[]]
-
+        self.type = "Uknown"
 
 
 
@@ -18,7 +18,16 @@ class Prix:
         roundLen = [len(round) for round in self.rounds]
 
         with open(path,"w+") as file:
-            file.write(f"Version,1,")
+            file.write(f"Version,2")
+            file.write(","*(columns-2) + "\n")
+
+            file.write(f"type,{self.type}")
+            file.write(","*(columns-2) + "\n")
+
+            file.write(f"lanes,{self.lanes}")
+            file.write(","*(columns-2) + "\n")
+
+            file.write(f"rounds,{len(self.rounds)}")
             file.write(","*(columns-2) + "\n")
 
 
@@ -62,15 +71,19 @@ class Prix:
                             file.write("*,"*self.lanes)
                     else:
                         file.write("N/A,"*self.lanes)
-                file.seek(file.tell()-1,0) 
+                file.seek(file.tell()-1,0)
                 file.truncate()
                 file.write("\n")
 
     def load(self,path: str):
         with open(path,"r") as file:
             line0=file.readline()[:-1]
-            print(line0)
-            if("Version,1," not in line0):
+            if("Version,2," in line0):
+                line=file.readline()[:-1].split(',')
+                self.type = line[1]
+                line=file.readline()
+                line=file.readline()
+            elif("Version,1," not in line0):
                 raise Exception("Not a valid prix file")
             line1=file.readline()[:-1].split(',')
             roundsN=(len(line1)-2)//self.lanes #-2 for first 2 lines
@@ -125,18 +138,70 @@ class Prix:
     def getRace(self,roundN: int, heatN: int) -> Race:
         return self.rounds[roundN][heatN]
     
-    def getRaceByN(self,raceN: int) -> Race:
+    @__requireValidRound
+    def appendHeat(self,roundN:int, race: Race):
+        self.rounds[roundN].append(race)
+    
+    def getTotalRaces(self) -> int:
+        ret = 0
+        for heat in self.rounds:
+            ret = ret + len(heat)
+        return ret
+    
+    def getRoundAndHeat(self,raceN :int) -> tuple[int,int]:
         roundN = 0
         while(roundN < self.getRoundN()):
             if raceN >= self.getHeatsInRound(roundN):
                 raceN = raceN - self.getHeatsInRound(roundN)
                 roundN = roundN + 1
             else:
-                return self.getRace(roundN,raceN)
+                return (roundN,raceN)
         raise Exception("invalid race")
 
     
+    def getRaceByN(self,raceN: int) -> Race:
+        raceIndex = self.getRoundAndHeat(raceN)
+        return self.getRace(raceIndex[0],raceIndex[1])
+    
+    def getRaceList(self) -> list[tuple[int,int]]:
+        retlist = []
+        for round in range(len(self.rounds)):
+            for heat in range(len(self.rounds[round])):
+                retlist.append((round,heat))
+                #this could be done smaller but screw it
+        return retlist
 
+    def getAllRaces(self) -> list[Race]:
+        return [self.getRace(event[0],event[1]) for event in self.getRaceList()]
+
+    
+    def getDriversRaceList(self,driverN: int) -> list[tuple[int,int]]:
+        retlist = []
+        for round in range(len(self.rounds)):
+            for heat in range(len(self.rounds[round])):
+                if(driverN in self.getRace(round,heat).getDrivers()):
+                    retlist.append((round,heat))
+        return retlist
+    
+    def getDriversRaces(self,driverN: int) -> list[Race]:
+        return [self.getRace(event[0],event[1]) for event in self.getDriversRaceList(driverN)]
+    
+    def getDriverList(self) -> list[int]:
+        ret = []
+        for race in self.getAllRaces():
+            for driver in race.getDrivers():
+                if driver not in ret:
+                    ret.append(driver)
+        return ret
+
+    def getDriverScore(self,driverN: int) -> float:
+        score = 0.0
+        racesComplete = 0.0
+        for race in self.getDriversRaces(driverN):
+            if race.getDriverResults(driverN):
+                score = score + race.getDriverResults(driverN)
+                racesComplete = racesComplete + 1.0
+        return (score/racesComplete) if racesComplete>0 else 4.0
 
     
 
@@ -148,23 +213,13 @@ class Prix:
 
 def main():
     pathname=f"{os.path.dirname(os.path.abspath(__file__))}"
-
     testPrix = Prix(3)
-    rounds = [[[6,5,3],[4,2,1]],
-             [[2,4,1],[3,6,5]]]
-    
-    testPrixRaces = []
+    testPrix.load(f"{pathname}\\prix\\club2024.csv")
+    for event in testPrix.getAllRaces():
+        print(f"{event.getResults()},")
 
-    for round in rounds:
-        heats = [Race(drivers) for drivers in round]
-        testPrixRaces.append(heats)
 
-    testPrix.rounds = testPrixRaces
-    #testPrix.save(f"{pathname}/testPrix.csv")
-    testPrix.load(f"{pathname}/club2024.csv")
-    print(f"loaded prix with {testPrix.getRoundN()} rounds")
 
-    testPrix.save(f"{pathname}/testSave.csv")
 
 
 

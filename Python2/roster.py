@@ -58,11 +58,14 @@ class Roster:
         self.drivers.append(Driver(self.driverN,driverName,carName))
         self.driverN = self.driverN + 1
 
-    def getdriverByNum(self,N: int) -> Driver:
+    def getDriverByNum(self,N: int) -> Driver:
         for driver in self.drivers:
             if driver.getdriverNum() == N:
                 return driver
         raise Exception("driver Not Found")
+    
+    def getDriverN(self) -> int:
+        return len(self.drivers)
     
 
 def main():

@@ -1,6 +1,7 @@
 
-from prix import Prix
 from race import Race
+from prix import Prix
+
 import os
 
 MAXRACERS = 39
@@ -20,6 +21,10 @@ def argsort(list: list[int]) -> list[int]:
 
 
 class ClintsPrix(Prix):
+    def __init__(self,lanes: int):
+        super().__init__(lanes)
+        self.type = "clintsPrix"
+
     def newPrix(self,driverList: list[int]):
         if len(driverList)>MAXRACERS:
             raise Exception("Too Many Racers")
