@@ -1,28 +1,42 @@
 import tkinter as tk
 from tkinter import Misc, ttk
 
-class ScrollingView:
 
-    def __init__(self, base_frame):
-        self.container = ttk.Frame(base_frame)
-        self.container.place(relx=0, rely=0, relwidth=1, relheight=1)
+class ScrollingView(tk.Frame):
+    def __init__(self,root,**frameKwargs):
+        super().__init__(root,**frameKwargs)
+        self.canvas = tk.Canvas(self)
+        self.verticalScroll = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.verticalScroll.set)
+        self.interiorFrame = tk.Frame(self.canvas)
 
-        self.canvas = tk.Canvas(self.container)
-        self.scroll_bar = ttk.Scrollbar(self.container, orient="vertical", command=self.canvas.yview)
-        self.frame = ttk.Frame(self.canvas)
+        self.bind("<Configure>",self.sizeConfig)
+        self.bind('<Enter>', self.onEnter)                                 # bind wheel events when the cursor enters the control
+        self.bind('<Leave>', self.onLeave)  
 
-        #self.frame.bind("<configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
-        self.canvas.create_window((0, 0), window=self.frame, anchor="nw")
-        self.canvas.configure(yscrollcommand=self.scroll_bar.set)
+    def setInteriorSize(self,w,h):
+        self.interiorFrame.place(x=0,y=0,width=w,height=h)
+        self.canvas.create_window((0, 0), window=self.interiorFrame, anchor="nw",width=w,height=h)
+        
 
-    def added_frame(self,width,height):
-        default = self.canvas.bbox("all")
-        expanded = (0,0,width,default[3]+height)
-        self.canvas.configure(scrollregion=expanded)
-        self.canvas.pack(side="left", fill="both", expand=True)
-        self.scroll_bar.pack(side="right", fill="y")
+    def sizeConfig(self,_):
+        w = self.winfo_width()
+        h = self.winfo_height()
+        self.canvas.place(x=0,y=0,width=w-10,height = h)
+        self.verticalScroll.place(x=w-10,y=0,width=10,height = h)
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        #self.canvas.place(x=w-10,y=0,width=10,height=h)
 
-    def clear_frame(self,width):
-        self.canvas.configure(scrollregion=(0,0,width,0))
-        self.canvas.pack(side="left", fill="both", expand=True)
-        self.scroll_bar.pack(side="right", fill="y")
+
+    
+    def onMouseWheel(self, event):                                                  #WINDOWS ONLY MOTHER HUBERDS
+
+        self.canvas.yview_scroll(int(-1* (event.delta/120)), "units")
+
+    
+    def onEnter(self, _):                                                       # bind wheel events when the cursor enters the control
+
+        self.bind_all("<MouseWheel>", self.onMouseWheel)
+
+    def onLeave(self, _):                                                       # unbind wheel events when the cursorl leaves the control
+        self.unbind_all("<MouseWheel>")
