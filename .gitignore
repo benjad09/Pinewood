@@ -209,6 +209,8 @@ cython_debug/
 
 #ignore saves IE .csv
 *.csv
+*.prix
+*.roster
 
 # Kernel Module Compile Results
 *.mod*

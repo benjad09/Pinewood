@@ -3,7 +3,7 @@ from clintsPrix import ClintsPrix
 from campPrix import ChampPrix
 from roster import Roster
 from roster import Driver
-from weekend import Weekend
+from cup import Cup
 import os
 
 
@@ -67,21 +67,23 @@ def main():
     roster = Roster()
     roster.load(f"{pathname}\\joyclub2024.csv")
     prix = ClintsPrix(3)
-    prix.newPrix(range(roster.getDriverN()))
-    theWeekend = Weekend()
-    theWeekend.setPrix(prix)
-    theWeekend.setRoster(roster)
+    prix.newPrix(range(roster.getRosterSize()))
+    girlsCup = Cup()
+    #girlsCup.load(f"{pathname}\\testCup")
+    girlsCup.addPrixs("standard",prix)
+    girlsCup.setPrix("standard")
+    girlsCup.setRoster(roster)
     futureNames = ["Previous","Current","On Deck","Hole"]
-    while(theWeekend.racesLeft()):
+    while(girlsCup.racesLeft()>12):
         for raceN in reversed(range(4)):
-            race = theWeekend.getRelitive(raceN-1)
+            race = girlsCup.getRelitive(raceN-1)
             if(race):
-                printRace(futureNames[raceN],[driver.getDriverName() for driver in theWeekend.getRaceDrivers(race)],race.getDrivers())
+                printRace(futureNames[raceN],[driver.getDriverName() for driver in girlsCup.getRaceDrivers(race)],race.getDrivers())
                 res = race.getResults()
                 if res:
                     print(f"{res[0]}     {res[1]}       {res[2]}")
-        theWeekend.pushRaceResults(results[theWeekend.getOnRace()])
-        prix.save(f"{pathname}\cleaner.csv")
+        girlsCup.pushRaceResults(results[girlsCup.getOnRace()])
+        girlsCup.save(f"{pathname}\\testCup")
         print("\n\n")
 
 

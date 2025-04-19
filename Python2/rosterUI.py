@@ -37,7 +37,7 @@ class DriverInfo(tk.Frame):
 
     def updateDriverLabels(self):
         self.driverNameStr.set(self.driver.getDriverName())
-        self.driverNStr.set(str(self.driver.getdriverNum()))
+        self.driverNStr.set(str(self.driver.getdriverNum()+1))
         self.carName.set(self.driver.getCarName() if self.driver.getCarName() else 'NULL')
 
     def updateDriver(self,_):
@@ -89,11 +89,12 @@ class RosterViewer(tk.LabelFrame):
 
         self.rosterViewer = ScrollingView(self)
 
-        self.roster = Roster()
+        self.roster = roster
 
         #self.roster = Roster()
 
         self.bind("<Configure>", self.configSize )
+        self.createFramesFromRoster()
 
 
     def loadRosterButton(self):
@@ -126,7 +127,7 @@ class RosterViewer(tk.LabelFrame):
     def saveRoster(self):
         if(self.savePath):
             for driverFrame in self.driverFrames:
-                driverFrame.updateDriver()
+                driverFrame.updateDriver(None)
             self.roster.save(self.savePath)
         else:
             self.saveAsRoster()
@@ -177,9 +178,9 @@ class RosterViewer(tk.LabelFrame):
         buttonH = 25
         buttonW = (w-40)//3
         W_5 = (w-40)//5
-        self.placeDrivers()
-        self.rosterViewer.place(x=10,y=10,height=h - ((buttonH*3)+60),width=w-20)
         
+        self.rosterViewer.place(x=10,y=10,height=h - ((buttonH*3)+60),width=w-20)
+        self.placeDrivers()
 
         self.driverEntry.place(x=10,y=h - buttonH*2 - 40,height = buttonH,width=(W_5*2))
         self.carNameEntry.place(x=20+(W_5*2),y=h - buttonH*2 - 40,height = buttonH,width=(W_5*2))

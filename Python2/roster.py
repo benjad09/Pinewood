@@ -86,7 +86,13 @@ class Roster:
                 return driver
         raise Exception("driver Not Found")
     
-    def getDriverN(self) -> int:
+    def getDriverByName(self,name: str) -> Driver:
+        for driver in self.drivers:
+            if driver.getDriverName() == name:
+                return driver
+        raise Exception("driver Not Found") 
+    
+    def getRosterSize(self) -> int:
         return len(self.drivers)
     
 
