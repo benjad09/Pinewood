@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import Misc, ttk
+from tkinter import ttk
 
 
 class ScrollingView(tk.Frame):
@@ -17,6 +17,7 @@ class ScrollingView(tk.Frame):
     def setInteriorSize(self,w,h):
         self.interiorFrame.place(x=0,y=0,width=w,height=h)
         self.canvas.create_window((0, 0), window=self.interiorFrame, anchor="nw",width=w,height=h)
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         
 
     def sizeConfig(self,_):
@@ -25,17 +26,14 @@ class ScrollingView(tk.Frame):
         self.canvas.place(x=0,y=0,width=w-10,height = h)
         self.verticalScroll.place(x=w-10,y=0,width=10,height = h)
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        #self.canvas.place(x=w-10,y=0,width=10,height=h)
 
 
     
     def onMouseWheel(self, event):                                                  #WINDOWS ONLY MOTHER HUBERDS
-
         self.canvas.yview_scroll(int(-1* (event.delta/120)), "units")
 
     
     def onEnter(self, _):                                                       # bind wheel events when the cursor enters the control
-
         self.bind_all("<MouseWheel>", self.onMouseWheel)
 
     def onLeave(self, _):                                                       # unbind wheel events when the cursorl leaves the control

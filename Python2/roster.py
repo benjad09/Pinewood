@@ -35,7 +35,7 @@ class Roster:
 
     def save(self,filepath :str):
         with open(filepath,"w+") as file:
-            file.write("Version,1,,\n")
+            file.write("Version,1,\n")
             file.write("Num,name,car name\n")
             for driver in self.drivers:
                 file.write(f"{driver.getdriverNum()+1},{driver.getDriverName()},")
@@ -45,7 +45,7 @@ class Roster:
     def load(self,filepath :str):
         with open(filepath,"r") as f:
             linein = f.readline()
-            if(linein != "Version,1,\n"):
+            if("Version,1," not in linein):
                 raise Exception("Unreconized file type")
             if(f.readline() != "Num,name,car name\n"):
                 raise Exception("Unreconized file type")
@@ -64,6 +64,21 @@ class Roster:
         self.drivers.append(Driver(self.driverN,driverName,carName))
         self.driverN = self.driverN + 1
         return self.drivers[-1]
+    
+    def getAllDrivers(self) -> list[Driver]:
+        return self.drivers
+    
+    def removeDriver(self,N: int):
+        for index,driver in enumerate(self.drivers):
+            if driver.getdriverNum() == N:
+                self.drivers.pop(index)
+                break
+        newDrivers : list[Driver]= []
+        self.driverN = 0
+        for oldDriver in self.drivers:
+            newDrivers.append(Driver(self.driverN,oldDriver.getDriverName(),oldDriver.getCarName()))
+            self.driverN = self.driverN + 1
+        self.drivers = newDrivers
 
     def getDriverByNum(self,N: int) -> Driver:
         for driver in self.drivers:
