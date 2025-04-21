@@ -1,6 +1,6 @@
 from race import Race
 from clintsPrix import ClintsPrix
-from campPrix import ChampPrix
+from defaultPrixs import ChampPrix
 from roster import Roster
 from roster import Driver
 from cup import Cup
@@ -66,11 +66,11 @@ def main():
     pathname=f"{os.path.dirname(os.path.abspath(__file__))}"
     roster = Roster()
     roster.load(f"{pathname}\\joyclub2024.csv")
-    prix = ClintsPrix(3)
-    prix.newPrix(range(roster.getRosterSize()))
+    prix = ClintsPrix()
+    prix.generatePrix(range(roster.getRosterSize()))
     girlsCup = Cup()
     #girlsCup.load(f"{pathname}\\testCup")
-    girlsCup.addPrixs("standard",prix)
+    girlsCup._addPrixs("standard",prix)
     girlsCup.setPrix("standard")
     girlsCup.setRoster(roster)
     futureNames = ["Previous","Current","On Deck","Hole"]

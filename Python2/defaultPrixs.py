@@ -2,15 +2,25 @@ from prix import Prix
 from race import Race
 import os
 
+class RunoffPrix(Prix):
+    def __init__(self):
+        super().__init__(self)
+        self.type = "runoff"
+
+    def generatePrix(self,driverList: list[int]):
+        self.lanes = len(driverList)
+        self.rounds = [[Race(driverList)]]
+
+
 class ChampPrix(Prix):
-    def __init__(self,lanes: int):
-        super().__init__(lanes)
+    def __init__(self):
+        super().__init__()
         self.type = "championchip"
 
-    def newPrix(self,driverList: list[int]):
+    def generatePrix(self,driverList: list[int]):
+        self.lanes = len(driverList)
         driverN = len(driverList)
         driverList.reverse()
-        print(driverList)
         if(driverN != self.lanes):
             raise Exception("expected champ and lanes to be the same")
         self.rounds = [[]] #one round winner takes all

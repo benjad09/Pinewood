@@ -1,7 +1,7 @@
 from prix import Prix
 from prix import Race
 from clintsPrix import ClintsPrix
-from campPrix import ChampPrix
+from defaultPrixs import ChampPrix,RunoffPrix
 from roster import Roster
 from roster import Driver
 
@@ -12,11 +12,26 @@ from pathlib import Path
 class Cup:
     def __init__(self):
         self.onRace = 0
+        self.supportedPrixs: dict[str] = {}
+        self.supportedPrixs["runnoff"] = RunoffPrix
+        self.supportedPrixs["championchip"] = ChampPrix
+        self.supportedPrixs["peterson"] = ClintsPrix
         self.roster : Roster = Roster()
-
         self.prixs : dict[str,Prix] = {}
 
         self.prix : Prix = None
+
+    def getSupportedPrixs(self) -> list[str]:
+        return self.supportedPrixs.keys()  
+
+    def makeNewPrix(self,prixName: str,prixType: str,driverList: list[Driver],**kwargs):
+        driverNlist = [driver.getdriverNum() for driver in driverList]
+        newPrix:Prix = self.supportedPrixs[prixType]()
+        newPrix.generatePrix(driverNlist,**kwargs)
+        self.prixs[prixName] = newPrix
+        
+
+        
 
 
     def save(self,folderLoc: str):
@@ -39,9 +54,9 @@ class Cup:
                 self.roster.load(f"{folderLoc}\\{file}")
             if Path(file).name.split('.')[1] == "prix":
                 prixName = Path(file).name.split('.')[0]
-                newPrix = Prix(3)
+                newPrix = Prix()
                 newPrix.load(f"{folderLoc}\\{file}")
-                self.addPrixs(prixName,newPrix)
+                self._addPrixs(prixName,newPrix)
 
 
     def haveRoster(self) -> bool:
@@ -57,9 +72,7 @@ class Cup:
         return self.roster
     
     
-    def addPrixs(self,name,prix :Prix):
-        if(name in self.prixs.keys()):
-            print("already exists")
+    def _addPrixs(self,name,prix :Prix):
         self.prixs[name] = prix
 
 

@@ -21,11 +21,12 @@ def argsort(list: list[int]) -> list[int]:
 
 
 class ClintsPrix(Prix):
-    def __init__(self,lanes: int):
-        super().__init__(lanes)
+    def __init__(self):
+        super().__init__()
         self.type = "clintsPrix"
+        self.lanes = 3
 
-    def newPrix(self,driverList: list[int]):
+    def generatePrix(self,driverList: list[int]):
         if len(driverList)>MAXRACERS:
             raise Exception("Too Many Racers")
         
@@ -58,8 +59,8 @@ class ClintsPrix(Prix):
 
 def main():
     pathname=f"{os.path.dirname(os.path.abspath(__file__))}"
-    testPrix = ClintsPrix(3)
-    testPrix.newPrix(range(6))
+    testPrix = ClintsPrix()
+    testPrix.generatePrix(range(6))
     testPrix.getRace(1,0).updateResults([3,1,2])
     testPrix.save(f"{pathname}/magicPrix.csv")
 

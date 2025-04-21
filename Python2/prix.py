@@ -4,10 +4,11 @@ import typing
 import os
 
 
+from abc import ABC, abstractmethod
 
 class Prix:
-    def __init__(self,lanes: int):
-        self.lanes = lanes
+    def __init__(self):
+        self.lanes = 0
         self.rounds :list[list[Race]]= [[]]
         self.type = "Uknown"
 
@@ -85,6 +86,7 @@ class Prix:
                 line=file.readline()
             elif("Version,1," not in line0):
                 raise Exception("Not a valid prix file")
+            self.lanes = 3
             line1=file.readline()[:-1].split(',')
             roundsN=(len(line1)-2)//self.lanes #-2 for first 2 lines
             file.readline()#clear Lane Markers
@@ -203,6 +205,10 @@ class Prix:
                 racesComplete = racesComplete + 1.0
         return (score/racesComplete) if racesComplete>0 else 4.0
 
+
+    @abstractmethod
+    def generatePrix(self,driverList: list[int],**kwargs):
+        pass  # This is an abstract method, no implementation here.
     
 
 

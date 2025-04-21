@@ -2,7 +2,7 @@ import os
 
 import tkinter as tk
 from clintsPrix import ClintsPrix
-from campPrix import ChampPrix
+from defaultPrixs import ChampPrix
 from rosterUI import RosterViewer
 from roster import Roster
 from roster import Driver
@@ -48,11 +48,7 @@ class CupControl(tk.LabelFrame):
 
         self.prixSelectionVar = tk.StringVar()
         self.prixLabel = tk.Label(self,text="Prixs: ")
-        self.prixSelection = ttk.Combobox(self, textvariable = self.prixSelectionVar,postcommand = self.loadPrixs, state="readonly")
-
-        
-        #postcommand = self._refreshXAxisOptionMenu
-        #self.prixSelection.bind("<<ComboboxSelected>>", lambda _: self._drawGraph())
+        self.prixSelection = ttk.Combobox(self, textvariable = self.prixSelectionVar,postcommand = self.loadPrix, state="readonly")
         
         self.prixoption = tk.StringVar()
         self.prixSelection.grid(row=0,column=1)
@@ -99,19 +95,19 @@ class CupControl(tk.LabelFrame):
 class RaceControlGUI:
     """Setups up and controls the core of the GUI"""
 
-    def __init__(self, root: tk.Tk,controller :"RaceControl"):
+    def __init__(self, root: tk.Tk,cup :Cup):
         self.root = root
-        self.control = controller
+        self.cup = cup
         self.root.wm_title(WINDOW_NAME)
         self.screen_w = int(self.root.winfo_screenwidth())
         self.screen_h = int(self.root.winfo_screenheight())
         self.default_geometry = str(GUIXSIZE)+"x"+str(GUIYSIZE)+"+"+str(int(self.screen_w/4))+"+"+str(int(self.screen_h/4))
         self.root.geometry(self.default_geometry)
         self.root.minsize(width=GUIMINXSIZE,height=GUIMINYSIZE)
-        self.root.protocol('WM_DELETE_WINDOW', self.control.exit)
-        self.rosterViewer = RosterViewer(self.control.roster,master = self.root,text='Race Roster')
+        #self.root.protocol('WM_DELETE_WINDOW', self.cup.exit)
+        self.rosterViewer = RosterViewer(self.cup.roster,master = self.root,text='Race Roster')
 
-        self.cupViewer = CupControl(self.root,self.control.cup,self.newCupUpdate,text = "Cup Control")
+        self.cupViewer = CupControl(self.root,self.cup,self.newCupUpdate,text = "Cup Control")
 
         self.root.bind("<Configure>",self.configSize)
 
@@ -119,7 +115,7 @@ class RaceControlGUI:
 
     def newCupUpdate(self):
         self.rosterViewer.createFramesFromRoster()
-        self.cupViewer.loadPrixs()
+        self.cupViewer.loadPrix()
 
 
     def configSize(self,_):
@@ -137,38 +133,11 @@ class RaceControlGUI:
 
 class RaceControl:
     def __init__(self):
-        pathname=f"{os.path.dirname(os.path.abspath(__file__))}"
-
         self.cup = Cup()
-        self.roster :Roster = self.cup.roster
-        #self.cup.load(f"{pathname}\\testCup")
-
         self.root = tk.Tk()
-        self.gui = RaceControlGUI(self.root,self)
+        self.gui = RaceControlGUI(self.root,self.cup)
         
         self.root.mainloop()
-
-    def getSupportedPrixs() -> list[str]:
-        return ["peterson","champ"]
-
-    def createPrix(self,prixName: str,type: str,drivers: list[Driver]):
-        driverN = [driver.getdriverNum() for driver in drivers]
-        if type == "peterson":
-            newPrix = ClintsPrix(3)
-        elif type == "champ":
-            newPrix = ChampPrix(3)
-        else:
-            Exception("Unreconized Prix Type")
-
-        newPrix.newPrix(driverN)
-        self.cup.addPrixs(prixName,newPrix)
-
-        
-        
-
-
-    def exit(self):
-        self.root.destroy()
 
     
 
