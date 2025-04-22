@@ -10,16 +10,17 @@ from tkinter import filedialog
 from tkinter import ttk
 from marshalVeiwer import MarshalVeiwer
 
+from tkinter import messagebox
+
 FREMENMAJORVERSION = 0
 FREMENMINORVERSION = 7
 
 WINDOW_NAME = f"RACE CONTROL"
 
 FONT_SIZE = 10
-GUIXSIZE = 1200
-GUIYSIZE = 820
 
-GUIMINXSIZE = 1200
+
+GUIMINXSIZE = 1300
 GUIMINYSIZE = 550
 
 GUIXSIZE = GUIMINXSIZE
@@ -183,7 +184,7 @@ class RaceControlGUI:
 
         self.cupViewer = CupControl(self.root,self.cup,self.newCupUpdate,self.newPrixUpdate,text = "Cup Control")
 
-        self.marshalViewer = MarshalVeiwer(self.root,self.cup,text = "Marshal Veiwer")
+        self.marshalViewer = MarshalVeiwer(self.root,self.cup,self.prixUpdateCb,text = "Marshal Veiwer")
 
         self.announcerViewer = tk.LabelFrame(self.root,text="Announcer")
 
@@ -195,6 +196,11 @@ class RaceControlGUI:
     def newCupUpdate(self):
         self.rosterViewer.createFramesFromRoster()
         self.cupViewer.loadPrixNames()
+
+    def prixUpdateCb(self):
+        print("prix updated")
+        self.cupViewer.saveCmd()
+        pass
         
 
     def newPrixUpdate(self):

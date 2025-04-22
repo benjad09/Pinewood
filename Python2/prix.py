@@ -6,6 +6,10 @@ import os
 
 from abc import ABC, abstractmethod
 
+def argsort(list: list[int]) -> list[int]:
+    "returns array of indexs sorted by max values"
+    return sorted(range(len(list)), key=lambda k: list[k])
+
 class Prix:
     def __init__(self):
         self.lanes = 0
@@ -200,6 +204,19 @@ class Prix:
                 if driver not in ret:
                     ret.append(driver)
         return ret
+    
+    def getOrderedScoreList(self) -> list[tuple[int,float]]:
+        driverList = self.getDriverList()
+        scoreList = [self.getDriverScore(driver) for driver in driverList]
+        sortedList = argsort(scoreList)
+        #sortedList.reverse()
+        ret = []
+        for index in sortedList:
+            ret.append((driverList[index],scoreList[index]))
+        return ret
+
+
+
 
     def getDriverScore(self,driverN: int) -> float:
         score = 0.0
@@ -210,6 +227,9 @@ class Prix:
                 racesComplete = racesComplete + 1.0
         return (score/racesComplete) if racesComplete>0 else 4.0
 
+
+    def getNumLanes(self) -> int:
+        return self.lanes
 
     @abstractmethod
     def generatePrix(self,driverList: list[int],**kwargs):

@@ -164,6 +164,8 @@ class Cup:
         if(self.onRace < self.prix.getTotalRaces()):
             self.prix.getRaceByN(self.onRace).updateResults(results)
             self.onRace = self.onRace + 1
+        else:
+            print("Invalid Race")
 
     @__requirePrix
     def getOnRace(self) -> int:
