@@ -4,7 +4,7 @@ import os
 
 class RunoffPrix(Prix):
     def __init__(self):
-        super().__init__(self)
+        super().__init__()
         self.type = "runoff"
 
     def generatePrix(self,driverList: list[int]):

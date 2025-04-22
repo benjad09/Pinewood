@@ -11,6 +11,9 @@ class Race:
 
     def getDrivers(self) -> list[int]:
         return self.driverBylane
+    
+    def getLaneN(self) -> int:
+        return len(self.driverBylane)
 
     def updateResults(self,placeByLanes: list[int]):
         """Sets the results or updates the result in terms of 1 indexed results IE

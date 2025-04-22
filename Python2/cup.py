@@ -22,7 +22,7 @@ class Cup:
         self.prix : Prix = None
 
     def getSupportedPrixs(self) -> list[str]:
-        return self.supportedPrixs.keys()  
+        return [key for key in self.supportedPrixs.keys()]  
 
     def makeNewPrix(self,prixName: str,prixType: str,driverList: list[Driver],**kwargs):
         driverNlist = [driver.getdriverNum() for driver in driverList]
@@ -128,6 +128,13 @@ class Cup:
     @__requirePrix
     def getCurrentPrix(self) -> Prix:
         return self.prix
+    
+    def getCurrentPrixName(self) -> str:
+        if self.prix:
+            for key in self.prixs.keys():
+                if self.prix == self.prixs[key]:
+                    return key
+        return ""
 
 
     @__returnNoneOnNoPrix

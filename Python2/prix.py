@@ -86,10 +86,15 @@ class Prix:
                 line=file.readline()
             elif("Version,1," not in line0):
                 raise Exception("Not a valid prix file")
-            self.lanes = 3
-            line1=file.readline()[:-1].split(',')
-            roundsN=(len(line1)-2)//self.lanes #-2 for first 2 lines
-            file.readline()#clear Lane Markers
+            #self.lanes = 3
+            file.readline()#clear round Markers
+            line1=file.readline()[:-1]
+            line1len = len(line1.split(','))
+            laneN = []
+            for laneNumber in line1.split(',')[2:]:
+                laneN.append(int(laneNumber))
+            self.lanes = max(laneN)
+            roundsN=(line1len-2)//self.lanes #-2 for first 2 lines
 
             self.rounds :list[list[Race]]= [[] for _ in range(roundsN)]
             while 1:
