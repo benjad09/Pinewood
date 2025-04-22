@@ -4,7 +4,7 @@ from prix import Prix
 import tkinter as tk
 from scrollingView import ScrollingView
 from tkinter import messagebox
-
+from ordinal import getOrdinal
 
 RACE_VIEW_WIDTH = 100
 RACE_VIEW_ELEMENT_HEIGHT = 15
@@ -14,11 +14,12 @@ RACE_SAVE_HEIGHT = 200
 FONT_SIZE = 12 
 
 class MarshalRaceVeiwer(tk.Frame):
-    def __init__(self,master,race: Race,**frameKwargs):
+    def __init__(self,master,race: Race,raceUpdatedCB,**frameKwargs):
         super().__init__(master,**frameKwargs)
         self.bind("<Configure>", self.configSize)
         self.race = race
         self.lanes = self.race.getLaneN()
+        self.raceUpdatedCB = raceUpdatedCB
 
         self.driverNvar:  list[tk.StringVar] = []
         for driverN in self.race.getDrivers():
@@ -40,7 +41,7 @@ class MarshalRaceVeiwer(tk.Frame):
         self.resultEntry: list[tk.Entry] = []
         for resVar in self.resultVar:
             self.resultEntry.append(tk.Entry(self,textvariable= resVar,font=("Arial", FONT_SIZE)))
-            self.resultEntry[-1].bind("<Return>",lambda _:self.updateResult())
+            self.resultEntry[-1].bind("<Return>",lambda _:self.manualUpdate(_))
 
         self.updateRace()
         
@@ -49,6 +50,10 @@ class MarshalRaceVeiwer(tk.Frame):
         if not ret:
             ret = [None for _ in range(self.lanes)]
         return ret
+    
+    def manualUpdate(self,_):
+        self.updateResult()
+        self.raceUpdatedCB()
     
     def updateResult(self):
         results = []
@@ -77,10 +82,10 @@ class MarshalRaceVeiwer(tk.Frame):
 
 
 class MarshalBoard(tk.LabelFrame):
-    def __init__(self,master,cup: Cup,**frameKwargs):
+    def __init__(self,master,cup: Cup,raceUpdatedCB,**frameKwargs):
         super().__init__(master,**frameKwargs)
         self.cup = cup
-
+        self.raceUpdatedCB = raceUpdatedCB
         self.raceViewer = ScrollingView(self)
         self.raceViewer.place(relx=0.0,rely=0.0,relwidth=1.0,relheight=1.0)
         self.raceVeiwes : list[MarshalRaceVeiwer] = []
@@ -135,7 +140,7 @@ class MarshalBoard(tk.LabelFrame):
         for round,heats in enumerate(heatsPerRound):
             for heat in range(heats):
                 #print(f"r {round}, h {heat}")
-                self.raceVeiwes.append(MarshalRaceVeiwer(self.raceViewer.interiorFrame,prix.getRace(round,heat)))
+                self.raceVeiwes.append(MarshalRaceVeiwer(self.raceViewer.interiorFrame,prix.getRace(round,heat),self.raceUpdatedCB))
                 self.raceVeiwes[-1].place(x=(RACE_VIEW_SPACING+RACE_VIEW_WIDTH)*(round+1),y=(RACE_VIEW_SPACING + RACE_VIEW_ELEMENT_HEIGHT*2)*(heat+1),width=RACE_VIEW_WIDTH,height=(RACE_VIEW_ELEMENT_HEIGHT*2))
 
 class racePusher(tk.LabelFrame):
@@ -240,21 +245,7 @@ class ScoreVeiwer(tk.LabelFrame):
         self.cup = cup
         self.scoresFrame.place(relx=0,rely=0,relwidth=1,relheight=1)
 
-    def getOrdinal(self,N :int) -> str:
-        tens = N%100
-        if tens in [11,12,13]:
-            return "th"
-        ones = N%10
-        if ones == 1:
-            return "st"
-        elif ones == 2:
-            return "nd"
-        elif ones == 3:
-            return "rd"
-        elif ones == 4:
-            return "th"
-        else:
-            return "th"
+
 
     def drawPrix(self):
         
@@ -270,7 +261,7 @@ class ScoreVeiwer(tk.LabelFrame):
         
         self.scoresFrame.setInteriorSize(SCOREFRAMEWIDTH-20,SCORELABELHEIGHT*len(drivers))
         for index,driver in enumerate(drivers):
-            print("Drawing Frame")
+            #print("Drawing Frame")
             self.scoreLabels.append(tk.Label(self.scoresFrame.interiorFrame,anchor='w',font=("Arial", FONT_SIZE), text = "NONE"))
             self.scoreLabels[-1].place(x=0,y=index*SCORELABELHEIGHT,width=SCOREFRAMEWIDTH-20,height=SCORELABELHEIGHT)
         self.updatePrix()
@@ -280,7 +271,7 @@ class ScoreVeiwer(tk.LabelFrame):
         if(self.cup.haveCurrentPrix()):
             scoreList = self.cup.getCurrentPrix().getOrderedScoreList()
             for index,score in enumerate(scoreList):
-                self.scoreLabels[index].config(text=f"{index+1}{self.getOrdinal(index+1)} #{score[0]+1}: {score[1]:.2f} {self.cup.getRoster().getDriverByNum(score[0]).getDriverName()}")
+                self.scoreLabels[index].config(text=f"{index+1}{getOrdinal(index+1)} #{score[0]+1}: {score[1]:.2f} {self.cup.getRoster().getDriverByNum(score[0]).getDriverName()}")
     
     
     
@@ -293,7 +284,7 @@ class MarshalVeiwer(tk.LabelFrame):
     def __init__(self,master,cup: Cup,prixUpdateCb,**frameKwargs):
         super().__init__(master,**frameKwargs)
         self.cup = cup
-        self.raceTable = MarshalBoard(self,cup,text="Races")
+        self.raceTable = MarshalBoard(self,cup,self.prixUpdate,text="Races")
         self.resultPusher = racePusher(self,cup,self.prixUpdate,text="Results")
         self.scoreFrame = ScoreVeiwer(self,cup,text="Score")
         self.prixUpdateCb = prixUpdateCb

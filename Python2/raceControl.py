@@ -9,6 +9,7 @@ from cup import Cup
 from tkinter import filedialog
 from tkinter import ttk
 from marshalVeiwer import MarshalVeiwer
+from cupVeiwer import CupVeiwer
 
 from tkinter import messagebox
 
@@ -182,11 +183,13 @@ class RaceControlGUI:
         #self.root.protocol('WM_DELETE_WINDOW', self.cup.exit)
         self.rosterViewer = RosterViewer(self.cup.roster,master = self.root,text='Race Roster')
 
-        self.cupViewer = CupControl(self.root,self.cup,self.newCupUpdate,self.newPrixUpdate,text = "Cup Control")
+        self.cupCont = CupControl(self.root,self.cup,self.newCupUpdate,self.newPrixUpdate,text = "Cup Control")
 
         self.marshalViewer = MarshalVeiwer(self.root,self.cup,self.prixUpdateCb,text = "Marshal Veiwer")
 
         self.announcerViewer = tk.LabelFrame(self.root,text="Announcer")
+        self.cupViewer = CupVeiwer(self.announcerViewer,self.cup,16)
+        self.cupViewer.place(relx=0,rely=0,relwidth=1.0,relheight=1.0)
 
         self.root.bind("<Configure>",self.configSize)
 
@@ -195,17 +198,19 @@ class RaceControlGUI:
 
     def newCupUpdate(self):
         self.rosterViewer.createFramesFromRoster()
-        self.cupViewer.loadPrixNames()
+        self.cupCont.loadPrixNames()
 
     def prixUpdateCb(self):
         print("prix updated")
-        self.cupViewer.saveCmd()
+        self.cupCont.saveCmd()
+        self.cupViewer.updatePrix()
         pass
         
 
     def newPrixUpdate(self):
         print(f"selected prix: {self.cup.getCurrentPrixName()}")
         self.marshalViewer.drawPrix()
+        self.cupViewer.drawPrix()
         pass
 
     def configSize(self,_):
@@ -218,7 +223,7 @@ class RaceControlGUI:
         #ANNOUNCER_VIEWER_WIDTH
 
         self.rosterViewer.place(x=newW-ROSTER_VIEWER_WIDTH-(FRAME_MARGIN*2),y=FRAME_MARGIN,height=newH-(FRAME_MARGIN*3)-CUP_VEIWER_HEIGHT,width=ROSTER_VIEWER_WIDTH)
-        self.cupViewer.place(x=newW-ROSTER_VIEWER_WIDTH-(FRAME_MARGIN*2),y=(newH)-FRAME_MARGIN-CUP_VEIWER_HEIGHT,width=ROSTER_VIEWER_WIDTH,height=CUP_VEIWER_HEIGHT)
+        self.cupCont.place(x=newW-ROSTER_VIEWER_WIDTH-(FRAME_MARGIN*2),y=(newH)-FRAME_MARGIN-CUP_VEIWER_HEIGHT,width=ROSTER_VIEWER_WIDTH,height=CUP_VEIWER_HEIGHT)
         self.marshalViewer.place(x=ANNOUNCER_VIEWER_WIDTH+(FRAME_MARGIN*2),y=FRAME_MARGIN,width=newW-(ROSTER_VIEWER_WIDTH+ANNOUNCER_VIEWER_WIDTH+(FRAME_MARGIN*5)),height=newH-(2*FRAME_MARGIN))
         self.announcerViewer.place(x=FRAME_MARGIN,y=FRAME_MARGIN,width=ANNOUNCER_VIEWER_WIDTH,height=newH-(2*FRAME_MARGIN))
 
@@ -227,7 +232,7 @@ class RaceControl:
     def __init__(self):
         self.cup = Cup()
         pathname=f"{os.path.dirname(os.path.abspath(__file__))}"
-        self.cup.load(f"{pathname}\\test3")
+        #self.cup.load(f"{pathname}\\test3")
 
         self.root = tk.Tk()
         self.gui = RaceControlGUI(self.root,self.cup)
