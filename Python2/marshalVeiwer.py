@@ -119,12 +119,12 @@ class MarshalBoard(tk.LabelFrame):
         maxHeats = max(heatsPerRound)
         self.raceViewer.setInteriorSize((prixRounds+1)*(RACE_VIEW_SPACING+RACE_VIEW_WIDTH),(maxHeats+1)*(RACE_VIEW_SPACING+RACE_VIEW_ELEMENT_HEIGHT*2))
         for roundN in range(prixRounds):
-            self.roundLabels.append(tk.Label(self.raceViewer.interiorFrame,text=f"Round {roundN+1}"))
+            self.roundLabels.append(tk.Label(self.raceViewer.interiorFrame,text=f"Round {roundN+1}",font=("Arial", 10)))
             self.roundLabels[-1].place(x=(roundN+1)*(RACE_VIEW_SPACING+RACE_VIEW_WIDTH),y = (RACE_VIEW_SPACING),width=RACE_VIEW_WIDTH,height=(RACE_VIEW_ELEMENT_HEIGHT))
         for heatN in range(maxHeats):
-            self.heatLabels.append(tk.Label(self.raceViewer.interiorFrame,text=f"Heat {heatN+1}"))
+            self.heatLabels.append(tk.Label(self.raceViewer.interiorFrame,text=f"Heat {heatN+1}",font=("Arial", 10)))
             self.heatLabels[-1].place(x=RACE_VIEW_SPACING,y=(RACE_VIEW_SPACING + RACE_VIEW_ELEMENT_HEIGHT*2)*(heatN+1),width=RACE_VIEW_WIDTH,height=(RACE_VIEW_ELEMENT_HEIGHT))
-        self.laneLabels.append(tk.Label(self.raceViewer.interiorFrame,text=f"lane"))
+        self.laneLabels.append(tk.Label(self.raceViewer.interiorFrame,text=f"lane",font=("Arial", 10)))
         self.laneLabels[-1].place(x=RACE_VIEW_SPACING,y=RACE_VIEW_ELEMENT_HEIGHT+RACE_VIEW_SPACING,width=RACE_VIEW_WIDTH,height=(RACE_VIEW_ELEMENT_HEIGHT))
         lanes = prix.getNumLanes()
         lane_spaceing = RACE_VIEW_WIDTH//lanes
@@ -132,7 +132,7 @@ class MarshalBoard(tk.LabelFrame):
         for roundN in range(prixRounds):
             for laneN in range(lanes):
                 #print(f"lane {laneN+1}")
-                self.laneLabels.append(tk.Label(self.raceViewer.interiorFrame,text=f"{laneN+1}"))
+                self.laneLabels.append(tk.Label(self.raceViewer.interiorFrame,text=f"{laneN+1}",font=("Arial", 10)))
                 self.laneLabels[-1].place(x=(RACE_VIEW_SPACING+RACE_VIEW_WIDTH)*(roundN+1)+(lane_spaceing*laneN),y=RACE_VIEW_ELEMENT_HEIGHT+RACE_VIEW_SPACING,width=lane_spaceing,height=(RACE_VIEW_ELEMENT_HEIGHT))
         
 
@@ -147,8 +147,8 @@ class racePusher(tk.LabelFrame):
     def __init__(self,master,cup: Cup,prixUpdateCb,**frameKwargs):
         super().__init__(master,**frameKwargs)
         self.laneLabels: list[tk.Label] = []
-        self.resultLabel: tk.Label = tk.Label(self,text="results")
-        self.laneText: tk.Label = tk.Label(self,text="lane")
+        self.resultLabel: tk.Label = tk.Label(self,text="results",font=("Arial", 10))
+        self.laneText: tk.Label = tk.Label(self,text="lane",font=("Arial", 10))
         self.resultVars: list[tk.StringVar] = []
         self.resultEntry: list[tk.Entry] = []
         self.pushButton = tk.Button(self,text="push",command=self.pushResults)
@@ -182,10 +182,10 @@ class racePusher(tk.LabelFrame):
         prix = self.cup.getCurrentPrix()
         lanes = prix.getNumLanes()
         for lane in range(lanes):
-            self.laneLabels.append(tk.Label(self,text=f"{lane+1}"))
+            self.laneLabels.append(tk.Label(self,text=f"{lane+1},",font=("Arial", 10)))
             self.resultVars.append(tk.StringVar())
             self.resultVars[lane].set("")
-            self.resultEntry.append(tk.Entry(self,textvariable=self.resultVars[lane]))
+            self.resultEntry.append(tk.Entry(self,textvariable=self.resultVars[lane],font=("Arial", 10)))
         
         #dirty nasty hack because lamdas do not play nicely with loops
         if lanes > 1:
@@ -321,9 +321,9 @@ class LaneStats(tk.LabelFrame):
         relW = 1.0/float(lanes)
         
         for lane in range(lanes):
-            self.laneLabels.append(tk.Label(self,text = f"{lane+1}",anchor='center'))
+            self.laneLabels.append(tk.Label(self,text = f"{lane+1}",anchor='center',font=("Arial", 12)))
             self.laneLabels[-1].place(relx=lane*relW,rely=0,relwidth=relW,relheight=.5)
-            self.laneStats.append(tk.Label(self,text = "0.0"))
+            self.laneStats.append(tk.Label(self,text = "0.0",font=("Arial", 12)))
             self.laneStats[-1].place(relx=lane*relW,rely=0.5,relwidth=relW,relheight=.5)
         self.updatePrix()
         

@@ -10,7 +10,7 @@ RACEVEIWSPACEING = 5
 
 
 class RaceVeiwer(tk.Frame):
-    def __init__(self,master,cup: Cup,raceN: int,fontSize:int,**frameKwargs):
+    def __init__(self,master,cup: Cup,raceN: int,fontSize:int,displayDriverNumbers=True,displayCarNames=False,displayResults=True,carLeadIn="",**frameKwargs):
         super().__init__(master,**frameKwargs)
         self.cup = cup
         self.master = master
@@ -24,8 +24,20 @@ class RaceVeiwer(tk.Frame):
         self.laneLabels : list[tk.Label] = [tk.Label(self,anchor='w',text = f"Lane {laneN+1}",font=("Arial",fontSize)) for laneN in range(self.lanes)]
         driverNamesStr = [driver.getDriverName() for driver in self.drivers]
         driverNumStr = [str(driver.getdriverNum() + 1) for driver in self.drivers]
-        self.driverLabels : list[tk.Label] = [tk.Label(self,anchor='w',text=f"{driverNamesStr[laneN]} #{driverNumStr[laneN]}",font=("Arial",fontSize)) for laneN in range(self.lanes)]
+        carNameString = [driver.getCarName() for driver in self.drivers]
+        self.displayCarName = displayCarNames
+        self.displayResults = displayResults
+
+        
+
+
+        if(displayDriverNumbers):
+            self.driverLabels : list[tk.Label] = [tk.Label(self,anchor='w',text=f"{driverNamesStr[laneN]} #{driverNumStr[laneN]}",font=("Arial",fontSize)) for laneN in range(self.lanes)]
+        else:
+            self.driverLabels : list[tk.Label] = [tk.Label(self,anchor='w',text=f"{driverNamesStr[laneN]}",font=("Arial",fontSize)) for laneN in range(self.lanes)]
         self.resultLabels : list[tk.Label] = [tk.Label(self,anchor='w',text=f"",font=("Arial",fontSize)) for laneN in range(self.lanes)]
+
+        self.carLabels : list[tk.Label] = [tk.Label(self,anchor='w',text = f"{carLeadIn}{carname}" if carname else "",font=("Arial",fontSize)) for carname in carNameString]
 
         self.bind("<Configure>", self.configSize )
 
@@ -49,34 +61,53 @@ class RaceVeiwer(tk.Frame):
             label.config(bg = bgcolor)
         for label in self.resultLabels:
             label.config(bg = bgcolor)
+        for label in self.carLabels:
+            label.config(bg = bgcolor)
         
 
 
     def configSize(self,_):
         h = self.winfo_height()
         w = self.winfo_width()
+        nLabels = 3 + (1 if self.displayCarName else 0) + (1 if self.displayResults else 0)
+        #print(nLabels)
+        resultSpaceing = 4 if self.displayCarName else 3
+
         laneSpaceing = (w-((self.lanes+1)*RACEVEIWSPACEING))//self.lanes
-        hSpaceing = (h-(RACEVEIWSPACEING*4))//5
+        hSpaceing = (h-(RACEVEIWSPACEING*(nLabels+1)))//nLabels
         self.roundAndHeatLabel.place(x=w//2,y=RACEVEIWSPACEING,width=(w//2-RACEVEIWSPACEING),height=hSpaceing)
         self.raceName.place(x=RACEVEIWSPACEING,y=RACEVEIWSPACEING,width=(w//2-RACEVEIWSPACEING),height=hSpaceing)
         for laneN in range(self.lanes):
             self.laneLabels[laneN].place(x=(RACEVEIWSPACEING+(RACEVEIWSPACEING+laneSpaceing)*laneN),y=RACEVEIWSPACEING*2+hSpaceing,width=laneSpaceing,height=hSpaceing)
             self.driverLabels[laneN].place(x=(RACEVEIWSPACEING+(RACEVEIWSPACEING+laneSpaceing)*laneN),y=RACEVEIWSPACEING*3+hSpaceing*2,width=laneSpaceing,height=hSpaceing)
-            self.resultLabels[laneN].place(x=(RACEVEIWSPACEING+(RACEVEIWSPACEING+laneSpaceing)*laneN),y=RACEVEIWSPACEING*4+hSpaceing*3,width=laneSpaceing,height=hSpaceing)
+            if self.displayCarName:
+                self.carLabels[laneN].place(x=(RACEVEIWSPACEING+(RACEVEIWSPACEING+laneSpaceing)*laneN),y=RACEVEIWSPACEING*4+hSpaceing*3,width=laneSpaceing,height=hSpaceing)
+            if self.displayResults:
+                self.resultLabels[laneN].place(x=(RACEVEIWSPACEING+(RACEVEIWSPACEING+laneSpaceing)*laneN),y=RACEVEIWSPACEING*(resultSpaceing+1)+hSpaceing*(resultSpaceing),width=laneSpaceing,height=hSpaceing)
 
 
 
 SPACING = 5
 
 class CupVeiwer(tk.Frame):
-    def __init__(self,master,cup: Cup,fontSize: int,**kwargsFrame):
+    def __init__(self,master,cup: Cup,fontSize: int = 16,displayDriverNumbers=True,displayCarNames=False,displayResults=True,raceFrameH=200,carLeadIn="",**kwargsFrame):
         super().__init__(master,**kwargsFrame)
         self.cup = cup
+        self.displayDriverNums = displayDriverNumbers
+
+        self.displayCarNames = displayCarNames
+        self.displayResults = displayResults
+        self.carLeadIn = carLeadIn
+
         self.fontSize = fontSize
         self.raceFrames : list[RaceVeiwer] = []
         self.frame = ScrollingView(self)
         self.frame.place(relx=0,rely=0,relwidth=1,relheight=1)
-        self.raceHeight = 200
+        self.raceHeight = raceFrameH
+        
+        self.spaceing = 5
+
+        self.PCFcolors = ["gray","green","yellow"]
         
         self.bind("<Configure>", self.configSize )
 
@@ -89,25 +120,25 @@ class CupVeiwer(tk.Frame):
         w = self.winfo_width()
         self.frame.setVeiw(0,0)
         totalRaces = self.cup.getCurrentPrix().getTotalRaces()
-        self.frame.setInteriorSize(w-10,(totalRaces*(SPACING+self.raceHeight)+SPACING))
+        self.frame.setInteriorSize(w-10,(totalRaces*(self.spaceing+self.raceHeight)+self.spaceing))
         for raceN in range(totalRaces):
-            self.raceFrames.append(RaceVeiwer(self.frame.interiorFrame,self.cup,raceN,self.fontSize))
-            self.raceFrames[-1].place(x=SPACING,y=(raceN)*(SPACING+self.raceHeight),width=w-(SPACING*2)-10,height=self.raceHeight)
+            self.raceFrames.append(RaceVeiwer(self.frame.interiorFrame,self.cup,raceN,self.fontSize,displayDriverNumbers=self.displayDriverNums,displayCarNames=self.displayCarNames,displayResults=self.displayResults,carLeadIn=self.carLeadIn))
+            self.raceFrames[-1].place(x=self.spaceing,y=(raceN)*(self.spaceing+self.raceHeight),width=w-(self.spaceing*2)-10,height=self.raceHeight)
 
         self.updatePrix()
 
     def getnameAndColorByPosition(self,index,onRace) -> tuple[str,str]:
         diff = onRace-index
         if(diff == 0):
-            return ("Current","green")
+            return ("Current",self.PCFcolors[1])
         if(diff == -1):
-            return ("Next","yellow")
+            return ("Next",self.PCFcolors[2])
         if(diff == 1):
-            return ("Last","gray")
+            return ("Last",self.PCFcolors[0])
         if(diff < 0):
-            return (f"Up in {diff*-1}","yellow")
+            return (f"Up in {diff*-1}",self.PCFcolors[2])
         else:
-            return (f"Race {index+1}","gray")
+            return (f"Race {index+1}",self.PCFcolors[0])
 
 
 

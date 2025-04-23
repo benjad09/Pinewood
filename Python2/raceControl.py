@@ -21,8 +21,8 @@ WINDOW_NAME = f"RACE CONTROL"
 FONT_SIZE = 10
 
 
-GUIMINXSIZE = 1300
-GUIMINYSIZE = 550
+GUIMINXSIZE = 1440
+GUIMINYSIZE = 900
 
 GUIXSIZE = GUIMINXSIZE
 GUIYSIZE = GUIMINYSIZE
@@ -32,7 +32,7 @@ GUIYSIZE = GUIMINYSIZE
 ROSTER_VIEWER_WIDTH = 350
 FRAME_MARGIN = 10
 
-ANNOUNCER_VIEWER_WIDTH = 450
+ANNOUNCER_VIEWER_WIDTH = 600
 
 CUP_VEIWER_HEIGHT = 150
 #3
@@ -184,9 +184,10 @@ class mainVeiwer(tk.Toplevel):
         self.title("14st Derby Night")
         self.minsize(width=500,height=500)
         self.state('zoomed')
-        self.raceViewer = CupVeiwer(self,self.cup,32)
-        self.raceViewer.raceHeight = 250
-        self.raceViewer.place(relx=0.1,rely=0.1,relwidth=.8,relheight=.8)
+        self.raceViewer = CupVeiwer(self,self.cup,fontSize=32,raceFrameH=250,displayCarNames=True,displayDriverNumbers=False,displayResults=False,carLeadIn="In the ")
+        self.raceViewer.config(bg = 'red')
+        #self.raceViewer.raceHeight = 250
+        self.raceViewer.place(relx=0.1,rely=0.05,relwidth=.8,relheight=.9)
 
     def drawPrix(self):
         self.raceViewer.drawPrix()
@@ -209,7 +210,7 @@ class RaceControlGUI:
         self.root.wm_title(WINDOW_NAME)
         self.screen_w = int(self.root.winfo_screenwidth())
         self.screen_h = int(self.root.winfo_screenheight())
-        self.default_geometry = str(GUIXSIZE)+"x"+str(GUIYSIZE)+"+"+str(int(self.screen_w/4))+"+"+str(int(self.screen_h/4))
+        self.default_geometry = str(GUIXSIZE)+"x"+str(GUIYSIZE)+"+"+str((self.screen_w-GUIXSIZE)//2)+"+"+str((self.screen_h-GUIYSIZE)//2)
         self.root.geometry(self.default_geometry)
         self.root.minsize(width=GUIMINXSIZE,height=GUIMINYSIZE)
         #self.root.protocol('WM_DELETE_WINDOW', self.cup.exit)
@@ -220,7 +221,7 @@ class RaceControlGUI:
         self.marshalViewer = MarshalVeiwer(self.root,self.cup,self.prixUpdateCb,text = "Marshal Veiwer")
 
         self.announcerViewer = tk.LabelFrame(self.root,text="Announcer")
-        self.cupViewer = CupVeiwer(self.announcerViewer,self.cup,16)
+        self.cupViewer = CupVeiwer(self.announcerViewer,self.cup,fontSize=20,raceFrameH=250,displayCarNames=True)
         self.cupViewer.place(relx=0,rely=0,relwidth=1.0,relheight=1.0)
 
         self.root.bind("<Configure>",self.configSize)
