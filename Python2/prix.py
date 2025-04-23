@@ -230,6 +230,21 @@ class Prix:
 
     def getNumLanes(self) -> int:
         return self.lanes
+    
+    def getLaneResults(self) -> list[float]:
+        results = [0.0 for _ in range(self.getNumLanes())]
+        totalRaces = 0.0
+        for race in self.getAllRaces():
+            if race.getResults():
+                totalRaces = totalRaces + 1
+                for index,result in enumerate(race.getResults()):
+                    results[index] = results[index] + result
+        if totalRaces > 0.0:
+            for index,score in enumerate(results):
+                results[index] = score/totalRaces
+        return results
+        
+
 
     @abstractmethod
     def generatePrix(self,driverList: list[int],**kwargs):

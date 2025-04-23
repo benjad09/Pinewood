@@ -207,7 +207,7 @@ class racePusher(tk.LabelFrame):
                 self.laneLabels[index].place(x=wSpacing+index*laneSpaceing,y=0,height=hSpacing,width=laneSpaceing)
                 self.resultEntry[index].place(x=wSpacing+index*laneSpaceing,y=hSpacing,height=hSpacing,width=laneSpaceing)
             for index in range(lanes-1):
-                self.resultEntry[index].bind("<Return>",lambda i = index+1:self.resultEntry[i].focus_set())
+                self.resultEntry[index].bind("<Return>",self.resultEntry[index+1].focus_set)
             self.resultEntry[-1].bind("<Return>",lambda _:self.pushResults())
 
 
@@ -276,6 +276,47 @@ class ScoreVeiwer(tk.LabelFrame):
     
     
 
+class LaneStats(tk.LabelFrame):
+    def __init__(self,master,cup: Cup,**frameKwargs):
+        super().__init__(master,**frameKwargs)
+        self.laneLabels: list[tk.Label] = []
+        self.laneStats: list[tk.Label] = []
+        self.cup = cup
+        self.lanes = 0
+
+        #self.bind("<Configure>",lambda _: self.configSize())
+
+    def drawPrix(self):
+        for label in self.laneLabels:
+            label.place_forget()
+        for label in self.laneStats:
+            label.place_forget()
+        if(not self.cup.haveCurrentPrix()):
+            return
+        self.laneLabels: list[tk.Label] = []
+        self.laneStats: list[tk.Label] = []
+        prix = self.cup.getCurrentPrix()
+        lanes = prix.getNumLanes()
+        relW = 1.0/float(lanes)
+        
+        for lane in range(lanes):
+            self.laneLabels.append(tk.Label(self,text = f"{lane+1}",anchor='center'))
+            self.laneLabels[-1].place(relx=lane*relW,rely=0,relwidth=relW,relheight=.5)
+            self.laneStats.append(tk.Label(self,text = "0.0"))
+            self.laneStats[-1].place(relx=lane*relW,rely=0.5,relwidth=relW,relheight=.5)
+        self.updatePrix()
+        
+    def updatePrix(self):
+        prix = self.cup.getCurrentPrix()
+        lanes = prix.getNumLanes()
+        results = prix.getLaneResults()
+        for lane in range(lanes):
+            self.laneStats[lane].config(text=f"{results[lane]:.2f}")
+
+        #{score[1]:.2f}
+    # def configSize(self):
+    #     h = self.winfo_height()
+    #     w = self.winfo_width()
 
 
 
@@ -287,6 +328,7 @@ class MarshalVeiwer(tk.LabelFrame):
         self.raceTable = MarshalBoard(self,cup,self.prixUpdate,text="Races")
         self.resultPusher = racePusher(self,cup,self.prixUpdate,text="Results")
         self.scoreFrame = ScoreVeiwer(self,cup,text="Score")
+        self.laneStats = LaneStats(self,cup,text="lanes")
         self.prixUpdateCb = prixUpdateCb
 
         
@@ -297,10 +339,12 @@ class MarshalVeiwer(tk.LabelFrame):
         self.raceTable.drawPrix()
         self.resultPusher.drawPrix()
         self.scoreFrame.drawPrix()
+        self.laneStats.drawPrix()
 
     def prixUpdate(self):
         self.raceTable.updatePrix()
         self.scoreFrame.updatePrix()
+        self.laneStats.updatePrix()
         self.prixUpdateCb()
 
         
@@ -310,7 +354,8 @@ class MarshalVeiwer(tk.LabelFrame):
         w = self.winfo_width()
         self.raceTable.place(x=10,y=10,height=h-RESULTPUSHERHEIGHT-40,width=w-SCOREFRAMEWIDTH-40)
         self.resultPusher.place(x=10,y=h-30-RESULTPUSHERHEIGHT,height=RESULTPUSHERHEIGHT,width=200)
-        self.scoreFrame.place(x=w-SCOREFRAMEWIDTH-20,y=10,height=h-40,width=SCOREFRAMEWIDTH)
+        self.scoreFrame.place(x=w-SCOREFRAMEWIDTH-20,y=10,height=h-RESULTPUSHERHEIGHT-40,width=SCOREFRAMEWIDTH)
+        self.laneStats.place(x=w-SCOREFRAMEWIDTH-20,y=h-30-RESULTPUSHERHEIGHT,height=RESULTPUSHERHEIGHT,width=SCOREFRAMEWIDTH)
 
 
 

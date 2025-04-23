@@ -139,12 +139,10 @@ class CupControl(tk.LabelFrame):
         if(prixname != ""):
             self.cup.setPrix(prixname)
             self.loadPrixCb()
-            #print(f"selected prix: {self.cup.getCurrentPrixName()}")
 
 
     def loadPrixNames(self):
         self.prixSelection['values'] = self.cup.getPrixsNames()
-        #print(self.cup.getPrixsNames())
 
  
     def loadCmd(self):
@@ -167,6 +165,28 @@ class CupControl(tk.LabelFrame):
             self.savePath = newpath
             self.cup.save(newpath)
 
+
+class mainVeiwer(tk.Toplevel):
+    def __init__(self, master,cup: Cup):
+        super().__init__(master)
+        self.cup = cup
+        self.title("14st Derby Night")
+        self.minsize(width=500,height=500)
+        self.state('zoomed')
+        self.raceViewer = CupVeiwer(self,self.cup,36)
+        self.raceViewer.raceHeight = 300
+        self.raceViewer.place(relx=0.1,rely=0.1,relwidth=.8,relheight=.8)
+
+    def drawPrix(self):
+        self.raceViewer.drawPrix()
+
+    def updatePrix(self):
+        self.raceViewer.updatePrix()
+    
+
+
+
+    
 
 class RaceControlGUI:
     """Setups up and controls the core of the GUI"""
@@ -193,6 +213,8 @@ class RaceControlGUI:
 
         self.root.bind("<Configure>",self.configSize)
 
+
+        self.bigVeiw = mainVeiwer(self.root,self.cup)
         #self.root.after(200,self.newCupUpdate)
 
 
@@ -201,17 +223,18 @@ class RaceControlGUI:
         self.cupCont.loadPrixNames()
 
     def prixUpdateCb(self):
-        print("prix updated")
         self.cupCont.saveCmd()
+        self.bigVeiw.updatePrix()
         self.cupViewer.updatePrix()
-        pass
+        
+        
         
 
     def newPrixUpdate(self):
-        print(f"selected prix: {self.cup.getCurrentPrixName()}")
         self.marshalViewer.drawPrix()
+        self.bigVeiw.drawPrix()
         self.cupViewer.drawPrix()
-        pass
+        
 
     def configSize(self,_):
         newWidth = self.root.winfo_width()
@@ -231,7 +254,7 @@ class RaceControlGUI:
 class RaceControl:
     def __init__(self):
         self.cup = Cup()
-        pathname=f"{os.path.dirname(os.path.abspath(__file__))}"
+        #pathname=f"{os.path.dirname(os.path.abspath(__file__))}"
         #self.cup.load(f"{pathname}\\test3")
 
         self.root = tk.Tk()

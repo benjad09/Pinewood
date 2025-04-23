@@ -19,7 +19,7 @@ class RaceVeiwer(tk.Frame):
         round,heat = prix.getRoundAndHeat(raceN)
         self.drivers: list[Driver] = self.cup.getRaceDrivers(self.race)
         self.raceName = tk.Label(self,anchor='w',text = "",font=("Arial",fontSize))
-        self.roundAndHeatLabel = tk.Label(self,anchor='e',text = f"round: {round+1} heat: {heat + 1}",font=("Arial",fontSize))
+        self.roundAndHeatLabel = tk.Label(self,anchor='e',text = f"Round: {round+1} Heat: {heat + 1}",font=("Arial",fontSize))
         self.lanes = self.race.getLaneN()
         self.laneLabels : list[tk.Label] = [tk.Label(self,anchor='w',text = f"Lane {laneN+1}",font=("Arial",fontSize)) for laneN in range(self.lanes)]
         driverNamesStr = [driver.getDriverName() for driver in self.drivers]
@@ -65,7 +65,7 @@ class RaceVeiwer(tk.Frame):
             self.resultLabels[laneN].place(x=(RACEVEIWSPACEING+(RACEVEIWSPACEING+laneSpaceing)*laneN),y=RACEVEIWSPACEING*4+hSpaceing*3,width=laneSpaceing,height=hSpaceing)
 
 
-RACEHEIGH = 200
+
 SPACING = 5
 
 class CupVeiwer(tk.Frame):
@@ -76,6 +76,7 @@ class CupVeiwer(tk.Frame):
         self.raceFrames : list[RaceVeiwer] = []
         self.frame = ScrollingView(self)
         self.frame.place(relx=0,rely=0,relwidth=1,relheight=1)
+        self.raceHeight = 200
         
         self.bind("<Configure>", self.configSize )
 
@@ -88,10 +89,10 @@ class CupVeiwer(tk.Frame):
         w = self.winfo_width()
         self.frame.setVeiw(0,0)
         totalRaces = self.cup.getCurrentPrix().getTotalRaces()
-        self.frame.setInteriorSize(w-10,(totalRaces*(SPACING+RACEHEIGH)+SPACING))
+        self.frame.setInteriorSize(w-10,(totalRaces*(SPACING+self.raceHeight)+SPACING))
         for raceN in range(totalRaces):
             self.raceFrames.append(RaceVeiwer(self.frame.interiorFrame,self.cup,raceN,self.fontSize))
-            self.raceFrames[-1].place(x=SPACING,y=(raceN)*(SPACING+RACEHEIGH),width=w-(SPACING*2)-10,height=RACEHEIGH)
+            self.raceFrames[-1].place(x=SPACING,y=(raceN)*(SPACING+self.raceHeight),width=w-(SPACING*2)-10,height=self.raceHeight)
 
         self.updatePrix()
 
@@ -115,24 +116,12 @@ class CupVeiwer(tk.Frame):
             
 
             onRace = self.cup.getOnRace()
-            self.frame.setVeiw(0,(onRace-1)*(SPACING+RACEHEIGH))
+            self.frame.setVeiw(0,(onRace-1)*(SPACING+self.raceHeight))
             for index,raceFrame in enumerate(self.raceFrames):
                 raceFrame.updatePrix()
                 info = self.getnameAndColorByPosition(index,onRace)
                 raceFrame.setRaceName(info[0])
                 raceFrame.setBgColor(info[1])
-                
-
-            #     raceFrame.place_forget()
-           
-            # if(onRace > 0):
-            #     race :RaceVeiwer = self.raceFrames[onRace-1]
-            #     race.place(x=SPACING,y=SPACING,width=w-(SPACING*2),height=RACEHEIGH)
-            # racesLeft = self.cup.racesLeft()
-            # for raceN in range(min(racesLeft,3)):
-            #     print(f"saving race {raceN}")
-            #     race = self.raceFrames[onRace+raceN]
-            #     race.place(x=SPACING,y=(raceN+1)*(SPACING+RACEHEIGH),width=w-(SPACING*2),height=RACEHEIGH)
         
 
 

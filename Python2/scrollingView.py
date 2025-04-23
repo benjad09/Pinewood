@@ -16,6 +16,7 @@ class ScrollingView(tk.Frame):
         self.verScrollOn = False
         self.horzScrollOn = False
         
+        self.visScroll = True
 
         self.inW = 0
         self.inH = 0
@@ -32,13 +33,14 @@ class ScrollingView(tk.Frame):
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         self.sizeConfig(None)
 
+    def setVisibleScroll(self,visbileScroll):
+        self.visScroll = visbileScroll
+        self.sizeConfig(None)
+
     def setVeiw(self,x,y):
-
-
         if(self.inW and (self.inW > self.winfo_width())):
             self.canvas.xview_moveto(x/self.inW )
         if(self.inH and (self.inH > self.winfo_height())):
-            print(f"hVarible {(y/self.inH)}")
             self.canvas.yview_moveto(y/self.inH)
         
         
@@ -52,11 +54,11 @@ class ScrollingView(tk.Frame):
         self.verScrollOn = True if (self.inH-10)>h else False
         self.horzScrollOn = True if (self.inW-10)>w else False
 
-        if(self.verScrollOn):
+        if(self.verScrollOn and self.visScroll):
             self.verticalScroll.place(x=w-10,y=0,width=10,height = h-10)
         else:
             self.verticalScroll.place_forget()
-        if(self.horzScrollOn):
+        if(self.horzScrollOn and self.visScroll):
             self.horizontalScroll.place(x=0,y=h-10,width=w-10,height=10)
         else:
             self.horizontalScroll.place_forget()
