@@ -42,6 +42,8 @@ class ScrollingView(tk.Frame):
             self.canvas.xview_moveto(x/self.inW )
         if(self.inH and (self.inH > self.winfo_height())):
             self.canvas.yview_moveto(y/self.inH)
+        if(self.inH and self.inW):
+            print(f"x:{x} y:{y} w:{self.inW} h:{self.inH}")
         
         
 

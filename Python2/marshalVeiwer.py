@@ -186,7 +186,28 @@ class racePusher(tk.LabelFrame):
             self.resultVars.append(tk.StringVar())
             self.resultVars[lane].set("")
             self.resultEntry.append(tk.Entry(self,textvariable=self.resultVars[lane]))
+        
+        #dirty nasty hack because lamdas do not play nicely with loops
+        if lanes > 1:
+            self.resultEntry[0].bind("<Return>",lambda _:self.resultEntry[1].focus_set())
+        if lanes > 2:
+            self.resultEntry[1].bind("<Return>",lambda _:self.resultEntry[2].focus_set())
+        if lanes > 3:
+            self.resultEntry[2].bind("<Return>",lambda _:self.resultEntry[3].focus_set())
+        if lanes > 4:
+            self.resultEntry[3].bind("<Return>",lambda _:self.resultEntry[4].focus_set())
+        if lanes > 5:
+            self.resultEntry[4].bind("<Return>",lambda _:self.resultEntry[5].focus_set())
+        if lanes > 6:
+            self.resultEntry[5].bind("<Return>",lambda _:self.resultEntry[6].focus_set())
+        if lanes > 7:
+            self.resultEntry[6].bind("<Return>",lambda _:self.resultEntry[7].focus_set())
+            
+        self.resultEntry[-1].bind("<Return>",lambda _:self.pushResults())
+        
         self.configSize()
+
+
 
 
 
@@ -206,9 +227,9 @@ class racePusher(tk.LabelFrame):
             for index in range(lanes):
                 self.laneLabels[index].place(x=wSpacing+index*laneSpaceing,y=0,height=hSpacing,width=laneSpaceing)
                 self.resultEntry[index].place(x=wSpacing+index*laneSpaceing,y=hSpacing,height=hSpacing,width=laneSpaceing)
-            for index in range(lanes-1):
-                self.resultEntry[index].bind("<Return>",self.resultEntry[index+1].focus_set)
-            self.resultEntry[-1].bind("<Return>",lambda _:self.pushResults())
+
+            
+
 
 
             
@@ -313,10 +334,6 @@ class LaneStats(tk.LabelFrame):
         for lane in range(lanes):
             self.laneStats[lane].config(text=f"{results[lane]:.2f}")
 
-        #{score[1]:.2f}
-    # def configSize(self):
-    #     h = self.winfo_height()
-    #     w = self.winfo_width()
 
 
 

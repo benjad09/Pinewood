@@ -21,6 +21,12 @@ class Cup:
 
         self.prix : Prix = None
 
+    def resetCup(self):
+        self.clearPrix()
+        self.prixs = {}
+        self.roster.clearRoster()
+
+
     def getSupportedPrixs(self) -> list[str]:
         return [key for key in self.supportedPrixs.keys()]  
 

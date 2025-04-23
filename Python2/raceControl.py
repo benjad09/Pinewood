@@ -97,12 +97,13 @@ class NewPrixWindow(tk.Toplevel):
         #tk.Label(self, text="This is a new window").pack(pady=20)
 
 class CupControl(tk.LabelFrame):
-    def __init__(self,master,cup: Cup,loadCupCB,loadPrixCb,**frameKwargs):
+    def __init__(self,master,cup: Cup,newCupCb,loadCupCB,loadPrixCb,**frameKwargs):
         super().__init__(master,**frameKwargs)
         self.loadButton = tk.Button(self,text = "load",command=self.loadCmd,font=("Arial", FONT_SIZE))
         self.saveButton = tk.Button(self,text = "save",command=self.saveCmd,font=("Arial", FONT_SIZE))
         self.saveAsButton = tk.Button(self,text= "save as",command=self.saveAsCmd,font=("Arial", FONT_SIZE))
         self.newPrixButton = tk.Button(self,text= "newPrix",command=self.newPrix,font=("Arial", FONT_SIZE))
+        self.newCupButton = tk.Button(self,text= "newCup",command=self.newCup,font=("Arial", FONT_SIZE))
         self.savePath :str = None
 
 
@@ -110,6 +111,8 @@ class CupControl(tk.LabelFrame):
         self.prixLabel = tk.Label(self,text="Prixs: ")
         self.prixSelection = ttk.Combobox(self, textvariable = self.prixSelectionVar,postcommand = self.loadPrixNames, state="readonly")
         self.prixSelection.bind("<<ComboboxSelected>>",lambda _:self.loadPrix())
+
+        
         
         self.prixoption = tk.StringVar()
         self.prixSelection.grid(row=0,column=1)
@@ -117,6 +120,7 @@ class CupControl(tk.LabelFrame):
         self.cup = cup
         self.loadCupCB = loadCupCB
         self.loadPrixCb = loadPrixCb
+        self.newCupCb = newCupCb
 
         self.prixSelectionVar = tk.StringVar()
         self.prixLabel.grid(row=0,column=0)
@@ -124,11 +128,16 @@ class CupControl(tk.LabelFrame):
         self.loadButton.grid(row=2,column=0)
         self.saveButton.grid(row=2,column=1)
         self.saveAsButton.grid(row=2,column=2)
-        self.newPrixButton.grid(row=3,column=1)
+        self.newPrixButton.grid(row=3,column=0)
+        self.newCupButton.grid(row=3,column=2)
 
         
 
         #self.bind("<Configure>",self.configSize)
+
+    def newCup(self):
+        self.newCupCb()
+
 
     def newPrix(self):
         NewPrixWindow(self,self.cup)
@@ -142,6 +151,7 @@ class CupControl(tk.LabelFrame):
 
 
     def loadPrixNames(self):
+        self.prixSelection.set("")
         self.prixSelection['values'] = self.cup.getPrixsNames()
 
  
@@ -152,6 +162,7 @@ class CupControl(tk.LabelFrame):
             self.cup.load(self.savePath)
             self.loadCupCB()
         pass
+
     def saveCmd(self):
         if(self.savePath):
             self.cup.save(self.savePath)
@@ -173,8 +184,8 @@ class mainVeiwer(tk.Toplevel):
         self.title("14st Derby Night")
         self.minsize(width=500,height=500)
         self.state('zoomed')
-        self.raceViewer = CupVeiwer(self,self.cup,36)
-        self.raceViewer.raceHeight = 300
+        self.raceViewer = CupVeiwer(self,self.cup,32)
+        self.raceViewer.raceHeight = 250
         self.raceViewer.place(relx=0.1,rely=0.1,relwidth=.8,relheight=.8)
 
     def drawPrix(self):
@@ -193,7 +204,8 @@ class RaceControlGUI:
 
     def __init__(self, root: tk.Tk,cup :Cup):
         self.root = root
-        self.cup = cup
+        #self.cup = cup
+        self.cup = Cup()
         self.root.wm_title(WINDOW_NAME)
         self.screen_w = int(self.root.winfo_screenwidth())
         self.screen_h = int(self.root.winfo_screenheight())
@@ -203,7 +215,7 @@ class RaceControlGUI:
         #self.root.protocol('WM_DELETE_WINDOW', self.cup.exit)
         self.rosterViewer = RosterViewer(self.cup.roster,master = self.root,text='Race Roster')
 
-        self.cupCont = CupControl(self.root,self.cup,self.newCupUpdate,self.newPrixUpdate,text = "Cup Control")
+        self.cupCont = CupControl(self.root,self.cup,self.newCupCb,self.newCupUpdate,self.newPrixUpdate,text = "Cup Control")
 
         self.marshalViewer = MarshalVeiwer(self.root,self.cup,self.prixUpdateCb,text = "Marshal Veiwer")
 
@@ -217,10 +229,16 @@ class RaceControlGUI:
         self.bigVeiw = mainVeiwer(self.root,self.cup)
         #self.root.after(200,self.newCupUpdate)
 
+    def newCupCb(self):
+        self.cup.resetCup()
+        self.newCupUpdate()
+        
+
 
     def newCupUpdate(self):
         self.rosterViewer.createFramesFromRoster()
         self.cupCont.loadPrixNames()
+        self.newPrixUpdate()
 
     def prixUpdateCb(self):
         self.cupCont.saveCmd()

@@ -146,6 +146,8 @@ class RosterViewer(tk.LabelFrame):
         self.addDriverEntry()
 
     def createFramesFromRoster(self):
+        for frame in self.driverFrames:
+            frame.place_forget()
         self.driverFrames = []
         for driver in self.roster.getAllDrivers():
             self.driverFrames.append(DriverInfo(self.rosterViewer.interiorFrame,driver,self.removeDriver))
