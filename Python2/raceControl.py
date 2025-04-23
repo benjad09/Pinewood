@@ -2,8 +2,6 @@ import os
 
 import tkinter as tk
 from rosterUI import RosterViewer
-from roster import Roster
-from roster import Driver
 from tkinter import messagebox
 from cup import Cup
 from tkinter import filedialog
@@ -12,6 +10,7 @@ from marshalVeiwer import MarshalVeiwer
 from cupVeiwer import CupVeiwer
 
 from tkinter import messagebox
+from resultScreen import mainVeiwer
 
 FREMENMAJORVERSION = 0
 FREMENMINORVERSION = 7
@@ -177,23 +176,7 @@ class CupControl(tk.LabelFrame):
             self.cup.save(newpath)
 
 
-class mainVeiwer(tk.Toplevel):
-    def __init__(self, master,cup: Cup):
-        super().__init__(master)
-        self.cup = cup
-        self.title("14st Derby Night")
-        self.minsize(width=500,height=500)
-        self.state('zoomed')
-        self.raceViewer = CupVeiwer(self,self.cup,fontSize=32,raceFrameH=250,displayCarNames=True,displayDriverNumbers=False,displayResults=False,carLeadIn="In the ")
-        self.raceViewer.config(bg = 'red')
-        #self.raceViewer.raceHeight = 250
-        self.raceViewer.place(relx=0.1,rely=0.05,relwidth=.8,relheight=.9)
 
-    def drawPrix(self):
-        self.raceViewer.drawPrix()
-
-    def updatePrix(self):
-        self.raceViewer.updatePrix()
     
 
 
