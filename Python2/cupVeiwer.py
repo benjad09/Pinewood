@@ -90,10 +90,11 @@ class RaceVeiwer(tk.Frame):
 SPACING = 5
 
 class CupVeiwer(tk.Frame):
-    def __init__(self,master,cup: Cup,fontSize: int = 16,displayDriverNumbers=True,displayCarNames=False,displayResults=True,raceFrameH=200,carLeadIn="",**kwargsFrame):
+    def __init__(self,master,cup: Cup,fontSize: int = 16,displayDriverNumbers=True,displayCarNames=False,displayResults=True,raceFrameH=200,veiwLag = 1,carLeadIn="",**kwargsFrame):
         super().__init__(master,**kwargsFrame)
         self.cup = cup
         self.displayDriverNums = displayDriverNumbers
+        self.veiwlag = veiwLag
 
         self.displayCarNames = displayCarNames
         self.displayResults = displayResults
@@ -147,7 +148,7 @@ class CupVeiwer(tk.Frame):
             
 
             onRace = self.cup.getOnRace()
-            self.frame.setVeiw(0,(onRace-1)*(SPACING+self.raceHeight))
+            self.frame.setVeiw(0,(onRace-self.veiwlag)*(SPACING+self.raceHeight))
             for index,raceFrame in enumerate(self.raceFrames):
                 raceFrame.updatePrix()
                 info = self.getnameAndColorByPosition(index,onRace)

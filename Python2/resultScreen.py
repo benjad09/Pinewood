@@ -127,12 +127,12 @@ class mainVeiwer(tk.Toplevel):
         self.title("14st Derby Night")
         self.minsize(width=500,height=500)
         self.state('zoomed')
-        self.raceViewer = CupVeiwer(self,self.cup,fontSize=32,raceFrameH=250,displayCarNames=True,displayDriverNumbers=False,displayResults=False,carLeadIn="In the ")
+        self.raceViewer = CupVeiwer(self,self.cup,fontSize=32,raceFrameH=210,displayCarNames=True,displayDriverNumbers=False,displayResults=False,veiwLag = 0,carLeadIn="In the ")
         self.raceViewer.config(bg = 'red')
-        self.memes = theMemeMahine(self,defaultbg='white')
+        #self.memes = theMemeMahine(self,defaultbg='white')
         #self.raceViewer.raceHeight = 250
-        self.raceViewer.place(relx=0.1,rely=0.05,relwidth=.8,relheight=.7)
-        self.memes.place(relx=0.2,rely=.8,relwidth=.6,relheight=.15)
+        self.raceViewer.place(relx=0.1,rely=0.05,relwidth=.8,relheight=.9)
+        #self.memes.place(relx=0.2,rely=.8,relwidth=.6,relheight=.15)
 
     def drawPrix(self):
         self.raceViewer.drawPrix()
