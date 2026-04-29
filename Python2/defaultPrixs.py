@@ -17,15 +17,13 @@ class ChampPrix(Prix):
         super().__init__()
         self.type = "championchip"
 
-    def generatePrix(self,driverList: list[int]):
-        self.lanes = len(driverList)
+    def generatePrix(self,driverList: list[int],lanes=3):
+        self.lanes = lanes
         driverN = len(driverList)
         driverList.reverse()
-        if(driverN != self.lanes):
-            raise Exception("expected champ and lanes to be the same")
         self.rounds = [[]] #one round winner takes all
         for i in range(driverN):
-            driversInHeat = [driverList[((ii+i)%driverN)] for ii in range(driverN)]
+            driversInHeat = [driverList[((ii+i)%driverN)] for ii in range(self.lanes)]
             driversInHeat.reverse()
             self.rounds[0].append(Race(driversInHeat))
 
