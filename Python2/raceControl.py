@@ -38,31 +38,22 @@ CUP_VEIWER_HEIGHT = 150
 FONT_SIZE = 10
 
 
-class NewPrixWindow(tk.Toplevel):
-    def __init__(self, master,cup: Cup):
+class StandardSelect(tk.Toplevel):
+    def __init__(self, master,cup: Cup,nameStr: str, typeStr: str):
         super().__init__(master)
         self.cup = cup
+        self.master = master
         self.title("Prix Selection")
         self.geometry("500x250")
+        self.typeStr = typeStr
+        self.nameStr = nameStr
 
-
-        self.prixNameVar = tk.StringVar()
-        self.prixName = tk.Entry(self,textvariable = self.prixNameVar)
-        tk.Label(self,text="Name:").grid(row=0,column=0,pady=10)
-        self.prixName.grid(row=0,column=1,pady=10)
-
-
-        self.typeSelectionVar = tk.StringVar()
-        self.typeSelection = ttk.Combobox(self, textvariable = self.typeSelectionVar, state="readonly",font=("Arial", FONT_SIZE))
-        self.typeSelection['values'] = self.cup.getSupportedPrixs()
-        tk.Label(self,text = "Type:",font=("Arial", FONT_SIZE)).grid(row=1,column=0,pady=10)
-        self.typeSelection.grid(row=1,column=1,pady=10)
-
+        tk.Label(self,text="Select Drivers").grid(row=0,column=0,pady=10)
         self.racerListBox = tk.Listbox(self,selectmode = tk.EXTENDED)
         for name in [driver.getDriverName() for driver in cup.getRoster().getAllDrivers()]:
             self.racerListBox.insert(tk.END,name)
 
-        self.racerListBox.grid(row=0,column=2,padx=5,rowspan=2)
+        self.racerListBox.grid(row=2,column=1,padx=5,rowspan=2)
         tk.Button(self,text="Select All",command =lambda :self.racerListBox.select_set(0, tk.END)).grid(row=3,column=2)
         tk.Button(self,text="cancel",command=lambda :self.destroy()).grid(row=3,column=1)
         tk.Button(self,text="generate",command = self.confirmAndGenerate).grid(row=3,column=0)
@@ -70,15 +61,10 @@ class NewPrixWindow(tk.Toplevel):
 
 
     def confirmAndGenerate(self):
-        name = self.prixName.get()
         nameList = [name for name in [self.racerListBox.get(index) for index in self.racerListBox.curselection()]]
-        prixType = self.typeSelectionVar.get()
-        if name == '':
-            messagebox.showwarning("yooooo","Need a name")
-        elif(len(nameList)<1):
+        prixType = self.typeStr
+        if(len(nameList)<1):
             messagebox.showwarning("yooooo","Need at least 1 racer")
-        elif(prixType not in self.cup.getSupportedPrixs()):
-            messagebox.showwarning("yooooo",f"no {prixType} type")
         else:
             label = f"Generate {prixType} prix with "
             if nameList == [driver.getDriverName() for driver in self.cup.getRoster().getAllDrivers()]:
@@ -89,11 +75,42 @@ class NewPrixWindow(tk.Toplevel):
                 if(len(nameList)>3):
                     label = label + "and more"
             if(messagebox.askokcancel("You Good?",label)):
-                self.cup.makeNewPrix(name,prixType,[self.cup.getRoster().getDriverByName(driver) for driver in [drivername for drivername in nameList]])
+                self.cup.makeNewPrix(self.nameStr,prixType,[self.cup.getRoster().getDriverByName(driver) for driver in [drivername for drivername in nameList]])
                 self.destroy()
+                self.master.destroy()
 
 
         #tk.Label(self, text="This is a new window").pack(pady=20)
+
+class NewPrixWindow(tk.Toplevel):
+        def __init__(self, master,cup: Cup):
+            super().__init__(master)
+            self.cup = cup
+            self.prixNameVar = tk.StringVar()
+            self.prixName = tk.Entry(self,textvariable = self.prixNameVar)
+            tk.Label(self,text="Name:").grid(row=0,column=0,pady=10)
+            self.prixName.grid(row=0,column=1,pady=10)
+            self.typeSelectionVar = tk.StringVar()
+            self.typeSelection = ttk.Combobox(self, textvariable = self.typeSelectionVar, state="readonly",font=("Arial", FONT_SIZE))
+            self.typeSelection['values'] = self.cup.getSupportedPrixs()
+            tk.Label(self,text = "Type:",font=("Arial", FONT_SIZE)).grid(row=1,column=0,pady=10)
+            self.typeSelection.grid(row=1,column=1,pady=10)
+            tk.Button(self,text="cancel",command=lambda :self.destroy()).grid(row=2,column=1)
+            tk.Button(self,text="make",command = self.makePrix).grid(row=2,column=0)
+
+        def makePrix(self):
+            name = self.prixName.get()
+            prixType = self.typeSelectionVar.get()
+            if name == '':
+                messagebox.showwarning("yooooo","Need a name")
+            elif(prixType not in self.cup.getSupportedPrixs()):
+                messagebox.showwarning("yooooo",f"no {prixType} type")
+            
+            if prixType:
+                StandardSelect(self,self.cup,name,prixType)
+                #self.destroy()
+
+
 
 class CupControl(tk.LabelFrame):
     def __init__(self,master,cup: Cup,newCupCb,loadCupCB,loadPrixCb,**frameKwargs):
